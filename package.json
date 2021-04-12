@@ -1,0 +1,16 @@
+{
+  "name": "bluefin",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node app.js",
+    "watch": "nodemon app.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "fastify": "^3.14.2",
+    "telegraf": "^4.3.0"
+  }
+}
