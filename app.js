@@ -6,7 +6,7 @@ const { bot, broadcast } = require('./telegram');
 
 async function update() {
     const res = await getHomes({
-        'max_price': '750000',
+        'max_price': '900000',
         'num_beds': '2',
         'min_listing_approx_size': '1000'
     });
@@ -16,7 +16,6 @@ async function update() {
     }
     
     console.log(res.length);
-    console.log(res[0].address);
     // merge with database
 }
 

@@ -1,5 +1,5 @@
 const _bluefin = Buffer.from('cmVkZmlu', 'base64').toString();
-const _api = `https://www.${_bluefin}.ca/stingray/api/gis`;
+const _api = `https://www.${_bluefin}.ca/stingray/mobile/v1/gis-proto-mobile`;
 
 const _mortgageDownPayment = 0.20;
 const _mortgageInterestRate = 0.019;
@@ -10,19 +10,22 @@ const _insuranceYearlyRate = 0.0054;
 
 const _taxYearlyRate = 0.0029;
 
+// X-RF-Android, appsflyer_id seem optional
+// Also has Cookie: RF_BROWSER_ID=Ac4WK5D8Q7SztfsqQY008w; RF_BID_UPDATED=1; RF_CORVAIR_LAST_VERSION=361.4.0; JSESSIONID=C0786834FAF7B79C22DCE68146724274; RF_BUSINESS_MARKET=97; RF_LAST_ACCESS=; RF_SECURE_AUTH=; RF_AUTH=; RF_W_AUTH=; RF_ACCESS_LEVEL=
 const _defaultHeaders = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68',
-    'Accept': '*/*',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Connection': 'keep-alive'
+    'User-Agent': 'Redfin Android 353.0.9',
+    'Accept': 'application/json',
+    'Accept-Encoding': 'gzip',
+    'Connection': 'keep-alive',
+    'X-RF-Android': '5cca9de45c86506e;Android/sdk_google_phone_x86/generic_x86:6.0/MASTER/6695544:userdebug/test-keys;Android;unknown;353.0.9;1;e6c972f9-073c-4abb-b5f2-06fcb43fbefe;353.0',
+    'appsflyer_id': '1618291814710-216498166915512168'
 };
 
 const _defaultParams = {
     'al': '1',
     'include_nearby_homes': 'true',
     'market': 'britishcolumbia',
-    'num_homes': '350',
+    'num_homes': '400',
     'ord': 'price-asc',
     'page_number': '1',
     'region_id': '3790,3791',
@@ -48,12 +51,9 @@ async function getHomes(params, headers) {
             method: 'get',
             headers: finalHeaders
         });
-
-        const json = res.data.replace('{}&&', '');
-
-        const obj = JSON.parse(json);
-        if (obj && obj.payload && obj.payload.homes) {
-            return obj.payload.homes.map(x => transform(x));
+        
+        if (res.data && res.data.homes) {
+            return res.data.homes.map(x => transform(x));
         }
     }
     catch (err) {
@@ -63,55 +63,48 @@ async function getHomes(params, headers) {
     return null;
 }
 
-function transform(x) {
+function transform(i) {
+    const x = i && i.homeData;
+    if (!x) {
+        return null;
+    }
+
+    // also propertyId, listingId, dataSourceId, marketId, businessMarketId, mlsStatusId
     const obj = {
-        id: x.mlsId && x.mlsId.value,
-        price: x.price && x.price.value,
-        hoaPayment: x.hoa && x.hoa.value,
-        sqft: x.sqFt && x.sqFt.value,
-        pricePerSqft: x.pricePerSqFt && x.pricePerSqFt.value,
-        beds: x.beds || 0,
-        baths: x.baths || 0,
-        location: x.location && x.location.value,
-        stories: x.stories || 0,
-        lat: x.latLong && x.latLong.value && x.latLong.value.latitude,
-        long: x.latLong && x.latLong.value && x.latLong.value.longitude,
-        streetLine: x.streetLine && x.streetLine.value,
-        unit: x.unitNumber && x.unitNumber.value,
-        city: x.city,
-        state: x.state,
-        postalCode: x.postalCode && x.postalCode.value,
-        country: x.countryCode,
-        propertyId: x.propertyId,
-        listingId: x.listingId,
-        dataSourceId: x.dataSourceId,
-        marketId: x.marketId,
-        servicePolicyId: x.servicePolicyId,
-        businessMarketId: x.businessMarketId,
-        yearBuilt: x.yearBuilt && x.yearBuilt.value,
-        dom: x.dom && x.dom.value,
-        broker: x.listingBroker && x.listingBroker.value,
+        mlsId: x.mlsId,
+        price: x.priceInfo && parseInt(x.priceInfo.amount),
+        searchStatus: x.listingMetadata && x.listingMetadata.searchStatus,
+        type: x.propertyType,
+        daysOnMarket: x.daysOnMarket && parseInt(x.daysOnMarket.daysOnMarket),
+        hoaPayment: x.hoaDues && parseInt(x.hoaDues.amount),
+        sqft: x.sqftInfo && parseInt(x.sqftInfo.amount),
+        beds: x.beds,
+        baths: x.baths,
+        location: x.addressInfo && x.addressInfo.location,
+        lat: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.latitude,
+        long: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.longitude,
+        streetLine: x.addressInfo && x.addressInfo.formattedStreetLine,
+        unit: x.addressInfo && x.addressInfo.unitNumber,
+        city: x.addressInfo && x.addressInfo.city,
+        state: x.addressInfo && x.addressInfo.state,
+        postalCode: x.addressInfo && x.addressInfo.zip,
+        country: x.addressInfo && x.addressInfo.countryCode,
+        yearBuilt: x.yearBuilt && x.yearBuilt.yearBuilt,
         url: `https://${_bluefin}.ca${x.url}`,
-        isHot: x.isHot,
-        hasVirtualTour: x.hasVirtualTour,
-        hasVideoTour: x.hasVideoTour,
-        has3DTour: x.has3DTour,
-        hasSelfTour: x.hasSelfTour,
-        isNew: x.isNewConstruction,
-        description: x.listingRemarks,
-        insight: x.insight && x.insight.value && x.insight.value.note,
-        status: 'active'
+        lastSoldDate: x.lastSaleData && x.lastSaleData.lastSoldDate,
+        broker: x.brokers && x.brokers.listingBrokerAndAgent && x.brokers.listingBrokerAndAgent.brokerName,
+        isNew: !!(x.listingMetadata && x.listingMetadata.isNewConstruction),
+        hasInsight: !!(x.insights && x.insights.hasInsight)
     };
 
     obj.address = getAddress(obj.streetLine, obj.city); 
     obj.mapUrl = getMapUrl(obj.lat, obj.long); 
-    obj.photos = getPhotos(obj.id, x.photos && x.photos.value); 
-
     obj.mortgagePayment = getMortgagePayment(obj.price);
     obj.taxPayment = getTaxPayment(obj.price); 
     obj.insurancePayment = getInsurancePayment(obj.price); 
     obj.totalPayment = obj.mortgagePayment + obj.taxPayment + obj.insurancePayment + obj.hoaPayment;
-
+    obj.pricePerSqft = obj.price / obj.sqft;
+    
     return obj;
 }
 
@@ -139,27 +132,6 @@ function getTaxPayment(price) {
 
 function getInsurancePayment(price) {
     return price * _insuranceYearlyRate / 12;
-}
-
-function getPhotos(id, encodedPhotos) {
-    if (!id || !encodedPhotos)
-    {
-        return null;
-    }
-
-    const idEnd = id.slice(-3);
-
-    const photoIds = encodedPhotos
-        .split(',')
-        .map(x => {
-            var split = x.split(':');
-            var photoId = (split && split.length == 2) ? split[1] : null;
-
-            return photoId ? `https://ssl.cdn-${_bluefin}.com/photo/256/islphoto/${idEnd}/genIslnoResize.${id}_${photoId}.jpg` : null;
-        })
-        .filter(x => !!x);
-
-    return photoIds;
 }
 
 module.exports = {
