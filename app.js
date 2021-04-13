@@ -3,19 +3,20 @@ require('dotenv').config();
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || "");
 
+const _allowedUserIds = process.env.TELEGRAM_ALLOWED_USERIDS.split(',');
+
+bot.use(async (ctx, next) => {
+    if (_allowedUserIds.indexOf(ctx.chat.id.toString()) < 0) {
+        ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot! (${ctx.chat.id})}`);
+    }
+    else {
+        await next();
+    }
+});
+
 bot.start(ctx => {
     const name = ctx.chat.type == "private" ? ctx.chat.first_name : ctx.chat.title;
-    const id = ctx.chat.id;
-
-    ctx.replyWithMarkdown(`👋 Hey there, ${name} (${id})!`);
+    ctx.replyWithMarkdown(`👋 Hey there, ${name} (${ctx.chat.id})!`);
 });
 
 bot.launch();
-
-const server = require('fastify')();
-
-server.get('/', async (req, res) => {
-    return { hello: 'world' };
-});
-
-server.listen(process.env.PORT || '3000');
