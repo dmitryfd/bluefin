@@ -17,7 +17,8 @@ const propertyTypes = {
     all: '1,2,3,4,5,6,7,8'
 };
 
-const _api = `https://www.redfin.ca/stingray/mobile/v1/gis-proto-mobile`;
+const _getHomesApi = 'https://www.redfin.ca/stingray/mobile/v1/gis-proto-mobile';
+const _getCommuteApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/commute/commuteDuration/property/';
 
 const _mortgageDownPayment = 0.20;
 const _mortgageInterestRate = 0.019;
@@ -39,32 +40,32 @@ const _defaultHeaders = {
     'appsflyer_id': '1618291814710-216498166915512168'
 };
 
-const _defaultParams = {
-    'al': '3',
-    'include_nearby_homes': 'true',
-    'market': 'britishcolumbia',
-    'num_homes': '400',
-    'ord': 'price-asc',
-    'page_number': '1',
-    'region_id': `${regions.vancouver},${regions.burnaby}`,
-    'region_type': '33,33',
-    'sf': '1,2,5,6,7',
-    'start': '0',
-    'status': '9',
-    'uipt': propertyTypes.all,
-    'v': '8',
-    'excl_ar': 'true',
-    'excl_ll': 'true'
-};
-
 const axios = require('axios').default;
 
-async function getHomes(params, headers) {
+async function getHomes(params, headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
     
-    const urlParams = { ..._defaultParams, ...params };
+    const defaultParams = {
+        'al': '1',
+        'include_nearby_homes': 'true',
+        'market': 'britishcolumbia',
+        'num_homes': '400',
+        'ord': 'price-asc',
+        'page_number': '1',
+        'region_id': `${regions.vancouver},${regions.burnaby}`,
+        'region_type': '33,33',
+        'sf': '1,2,5,6,7',
+        'start': '0',
+        'status': '9',
+        'uipt': propertyTypes.all,
+        'v': '8',
+        'excl_ar': 'true',
+        'excl_ll': 'true'
+    };
+    
+    const urlParams = { ...defaultParams, ...params };
     const urlParamsStr = new URLSearchParams(urlParams).toString();
-    const url = `${_api}?${urlParamsStr}`;
+    const url = `${_getHomesApi}?${urlParamsStr}`;
 
     try {
         const res = await axios(url, {
@@ -89,9 +90,10 @@ function transform(i) {
         return null;
     }
 
-    // also propertyId, listingId, dataSourceId, marketId, businessMarketId, mlsStatusId
+    // also listingId, dataSourceId, marketId, businessMarketId, mlsStatusId
     const obj = {
         mlsId: x.mlsId,
+        propertyId: x.propertyId,
         price: x.priceInfo && parseInt(x.priceInfo.amount),
         searchStatus: x.listingMetadata && x.listingMetadata.searchStatus,
         type: x.propertyType,
@@ -163,8 +165,38 @@ function getInsurancePayment(price) {
 // GET https://www.redfin.com/stingray/mobile/api/v1/home/details/neighborhoodStats/walkScore?propertyId=155378604&listingId=125016081&accessLevel=1&android-app-version-code=380 HTTP/1.1
 // {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"walkScoreData":{"walkScore":{"value":59.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin","shortDescription":"Somewhat Walkable","description":"Some errands can be accomplished on foot","color":"#e69500"},"bikeScore":{"value":84.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin"},"transitScore":{"value":75.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin"}}}}
 
-// GET https://www.redfin.com/stingray/mobile/api/v1/home/details/commute/commuteDuration/property/155378604?commuteTypeId=3&destinationLatitude=49.2820597&destinationLongitude=-123.1196942&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"formattedDuration":"22 mins"}}
+async function getCommute(propertyId, commuteTypeId = '3', destinationLatitude = '49.2820597', destinationLongitude = '-123.1196942', headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        commuteTypeId,
+        destinationLatitude,
+        destinationLongitude,
+        'android-app-version-code': '380'
+    };
+
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getCommuteApi}${propertyId}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        if (obj && obj.payload) {
+            return obj.payload.formattedDuration;
+        }
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
 
 // GET https://www.redfin.com/stingray/api/home/details/popularityInfo?listingId=125016081&android-app-version-code=380 HTTP/1.1
 // {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"numHomeViews":0,"p90ViewThreshold":0,"isPopular":false,"isFirstTour":false}}
@@ -178,5 +210,6 @@ function getInsurancePayment(price) {
 module.exports = {
     propertyTypes,
     regions,
-    getHomes
+    getHomes,
+    getCommute
 };
