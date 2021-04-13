@@ -20,6 +20,11 @@ const propertyTypes = {
 const _getHomesApi = 'https://www.redfin.ca/stingray/mobile/v1/gis-proto-mobile';
 const _getCommuteApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/commute/commuteDuration/property/';
 const _getTourInsightsApi = 'https://www.redfin.com/stingray/mobile/api/1/home/details/tourInsights';
+const _getWalkScoreApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/neighborhoodStats/walkScore';
+const _getPopularityInfoApi = 'https://www.redfin.com/stingray/api/home/details/popularityInfo';
+const _getAmenitiesApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/amenities';
+const _getAboveTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/aboveTheFold';
+const _getBelowTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold';
 
 const _mortgageDownPayment = 0.20;
 const _mortgageInterestRate = 0.019;
@@ -47,8 +52,8 @@ async function getHomes(params, headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
     
     const defaultParams = {
-        'al': '1',
-        'include_nearby_homes': 'true',
+        'al': '1', //3 on web?
+        'include_nearby_homes': 'true', //remove?
         'market': 'britishcolumbia',
         'num_homes': '400',
         'ord': 'price-asc',
@@ -59,9 +64,10 @@ async function getHomes(params, headers = null) {
         'start': '0',
         'status': '9',
         'uipt': propertyTypes.all,
-        'v': '8',
-        'excl_ar': 'true',
-        'excl_ll': 'true'
+        'v': '8', //6 on mobile?
+        'excl_ar': 'true', //works on mobile?
+        'excl_ll': 'true', //works on mobile?
+        'android-app-version-code': '380'
     };
     
     const urlParams = { ...defaultParams, ...params };
@@ -158,13 +164,13 @@ function getInsurancePayment(price) {
     return price * _insuranceYearlyRate / 12;
 }
 
-async function getTourInsights(propertyId, listingId, accessLevel = '1', headers = null) {
+async function getTourInsights(propertyId, listingId, headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
     
     const urlParams = {
         propertyId,
         listingId,
-        accessLevel,
+        accessLevel: '1',
         'android-app-version-code': '380'
     };
 
@@ -189,11 +195,36 @@ async function getTourInsights(propertyId, listingId, accessLevel = '1', headers
     return null;
 }
 
-// GET https://www.redfin.com/stingray/mobile/api/v1/home/details/aboveTheFold?propertyId=155378604&accessLevel=1&listingId=125016081&supported_virtualtour_sources=0,1,2&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"mainHouseInfo":{"listingId":125016081,"videoOpenHouses":[],"hotnessInfo":{"isHot":false,"hotnessMessageInfoWithTourLink":{"hotnessMessageAction":"go tour it now"}},"listingAgents":[{"agentInfo":{"agentName":"Rose Liapis","isAgentNameBlank":false,"isRedfinAgent":false,"isPartnerAgent":false,"isExternalAgent":false},"brokerName":"Goodrich Realty Inc.","agentEmailAddress":"roseliapis@yahoo.com","isOpendoor":false}],"buyingAgents":[],"remarksDisplayLevel":1,"marketingRemarks":[{"marketingRemark":"NW corner unit, spacious 2 bedroom  \u0026  den (or 3 bdrm), 2 baths and in suite laundry. Unit shows very well. Newer laminate floor in living room, dining room  \u0026  den. Fresh paint and crown mouldings. Updated shower and bathtub by Bathfitter, also new dishwasher, front loading washer and dryer. 2 parking stalls rent for $200/month both. Close to transit, elementary, high school and bus route to UBC. Leaky condo, must pay all cash, no finance available. Buyer pays special levy. Potential re-development site. Call for your private appointment. Masks must be worn at showing.  ","displayLevel":1}],"selectedAmenities":[{"header":"Maintenance Fee","content":"$460/month"},{"header":"Property Type","content":"Apartment/Condo"},{"header":"Property Style","content":"Corner Unit"},{"header":"Stories","content":"1"},{"header":"Community","content":"Renfrew Heights","displayLevel":1},{"header":"Region","content":"Greater Vancouver Regional District"},{"header":"MLS®#","content":"R2502255"},{"header":"Built","content":"1995"}],"showPriceHomeLink":false,"showClaimHomeLink":false,"alwaysShowAgentAttribution":false,"showOffMarketWarning":false,"propertyAddress":{"streetNumber":"2528","directionalPrefix":"E","streetName":"Broadway","streetType":"","directionalSuffix":"","unitType":"#","unitValue":"201","city":"Vancouver","stateOrProvinceCode":"BC","postalCode":"V5M 4T7","countryCode":"CA"},"propertyIsActivish":false,"isComingSoonListing":false,"hasOfferDeadlineInEffect":false,"isRedfinDirectEligible":false,"isOpendoorEligible":false,"isBDXEligible":false,"isFMLS":false},"mediaBrowserInfo":{"scans":[],"videos":[],"isHot":false,"previousListingPhotosCount":0},"openHouseInfo":{"openHouseList":[]}}}
+async function getWalkScore(propertyId, listingId, headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        propertyId,
+        listingId,
+        accessLevel: '1',
+        'android-app-version-code': '380'
+    };
 
-// GET https://www.redfin.com/stingray/mobile/api/v1/home/details/neighborhoodStats/walkScore?propertyId=155378604&listingId=125016081&accessLevel=1&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"walkScoreData":{"walkScore":{"value":59.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin","shortDescription":"Somewhat Walkable","description":"Some errands can be accomplished on foot","color":"#e69500"},"bikeScore":{"value":84.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin"},"transitScore":{"value":75.0,"link":"https://www.walkscore.com/score/2528+Broadway++Vancouver+BC+V5M+4T7/lat\u003d49.2616818/lng\u003d-123.0546664?utm_source\u003dredfin"}}}}
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getWalkScoreApi}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
 
 async function getCommute(propertyId, commuteTypeId = '3', destinationLatitude = '49.2820597', destinationLongitude = '-123.1196942', headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
@@ -228,19 +259,139 @@ async function getCommute(propertyId, commuteTypeId = '3', destinationLatitude =
     return null;
 }
 
-// GET https://www.redfin.com/stingray/api/home/details/popularityInfo?listingId=125016081&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"numHomeViews":0,"p90ViewThreshold":0,"isPopular":false,"isFirstTour":false}}
+async function getPopularityInfo(listingId, headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        listingId,
+        'android-app-version-code': '380'
+    };
 
-// GET https://www.redfin.com/stingray/mobile/api/v1/home/details/amenities?propertyId=155239008&listingId=125283113&accessLevel=1&android-app-version-code=380&mc-mv=1617991667260&mc-dsov=1617213270019&mc-mlsv=1617835433462&mc-ccv=-400856821&mc-api=2 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"superGroups":[{"types":[33,27,34,28],"amenityGroups":[{"groupTitle":"Virtual Tour","referenceName":"Virtual Tour","amenityEntries":[{"referenceName":"VT_VTOUR_URL","accessLevel":1,"displayLevel":1,"amenityValues":["\u003ca href\u003d\u0027https://my.matterport.com/show/?m\u003dXcXZq3a3Q2t\u0027 target\u003d\u0027_blank\u0027 rel\u003d\u0027nofollow noopener\u0027\u003eBranded Virtual Tour\u003c/a\u003e"]}]},{"groupTitle":"Building Information","referenceName":"Building Information","amenityEntries":[{"amenityName":"# of Floor Levels","referenceName":"LM_INT1_1","accessLevel":1,"displayLevel":1,"amenityValues":["2"]},{"amenityName":"Approximate Year Built","referenceName":"LM_INT2_2","accessLevel":1,"displayLevel":1,"amenityValues":["2,004"]},{"amenityName":"Age","referenceName":"LM_INT2_3","accessLevel":1,"displayLevel":1,"amenityValues":["17"]},{"amenityName":"Basement Area","referenceName":"LFD_BASEMENT_AREA_37","accessLevel":1,"displayLevel":1,"amenityValues":["None"]}]},{"groupTitle":"Utilities","referenceName":"Utilities","amenityEntries":[{"amenityName":"Sewer Type","referenceName":"LM_CHAR10_75","accessLevel":1,"displayLevel":1,"amenityValues":["City/Municipal"]}]},{"groupTitle":"Tax Information","referenceName":"Tax Information","amenityEntries":[{"amenityName":"Gross Taxes","referenceName":"LM_DEC_16","accessLevel":1,"displayLevel":1,"amenityValues":["$2,211.34"]},{"amenityName":"For Tax Year","referenceName":"LM_INT2_5","accessLevel":1,"displayLevel":1,"amenityValues":["2,019"]}]}],"titleString":"Virtual Tour, Exterior Features, Utilities, Taxes / Assessments"},{"types":[21],"amenityGroups":[{"groupTitle":"Bathroom Information","referenceName":"Bathroom Information","amenityEntries":[{"amenityName":"# of Bathrooms (Total)","referenceName":"LM_INT1_19","accessLevel":1,"displayLevel":1,"amenityValues":["3"]},{"amenityName":"# of Full Bathrooms","referenceName":"LM_INT1_18","accessLevel":1,"displayLevel":1,"amenityValues":["2"]},{"amenityName":"# of Half Bathrooms","referenceName":"LM_INT1_17","accessLevel":1,"displayLevel":1,"amenityValues":["1"]}]},{"groupTitle":"Fireplace Information","referenceName":"FireplaceInformation","amenityEntries":[{"amenityName":"# of Fireplaces","referenceName":"LM_INT1_2","accessLevel":1,"displayLevel":1,"amenityValues":["1"]}]}],"titleString":"Interior Features"},{"types":[20],"amenityGroups":[{"groupTitle":"Land Information","referenceName":"Land Information","amenityEntries":[{"amenityName":"Title to Land","referenceName":"LM_CHAR10_12","accessLevel":1,"displayLevel":1,"amenityValues":["Leasehold prepaid-Strata"]}]},{"groupTitle":"Property Information","referenceName":"Property Features","amenityEntries":[{"amenityName":"Floor Area Finished - Total","referenceName":"LM_DEC_5","accessLevel":1,"displayLevel":1,"amenityValues":["1,044"]},{"amenityName":"Type","referenceName":"L_TYPE_","accessLevel":1,"displayLevel":1,"amenityValues":["Townhouse"]},{"amenityName":"Type of Dwelling","referenceName":"LM_CHAR10_11","accessLevel":1,"displayLevel":1,"amenityValues":["Townhouse"]}]}],"titleString":"Property / Lot Details"},{"types":[32,39],"amenityGroups":[{"groupTitle":"Location Information","referenceName":"Location Information","amenityEntries":[{"amenityName":"Area","referenceName":"L_AREA","accessLevel":1,"displayLevel":1,"amenityValues":["Burnaby North"]},{"amenityName":"Sub-Area/Community","referenceName":"LM_CHAR10_5","accessLevel":1,"displayLevel":1,"amenityValues":["Simon Fraser Univer."]}]},{"groupTitle":"Community Information","referenceName":"CommunityInformation","amenityEntries":[{"amenityName":"Amenities","referenceName":"LFD_AMENITIES_56","accessLevel":1,"displayLevel":1,"amenityValues":["Exercise Centre","In Suite Laundry"]}]}],"titleString":"Location Details, Community Information"}],"isFMLS":false,"showGhostTown":false,"showListingVOW":false,"amenitiesLocked":false,"totalAmenities":0,"userHasAccess":false}}
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getPopularityInfoApi}?${urlParamsStr}`;
 
-// GET https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold?propertyId=155239008&listingId=125283113&accessLevel=1&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"schoolsInfo":{"elementarySchools":[{"servesHome":true,"parentRating":0,"distanceInMiles":"0.2","gradeRanges":"K to 7","institutionType":"Public","name":"University Highlands Elementary School","schoolUrl":"/bc/school/university-highlands-elementary-school/237617","searchUrl":"/bc/school/university-highlands-elementary-school/237617","id":237617,"fullAddress":"9388 Tower Rd, Burnaby, BC V5A 4X6","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":true,"middle":false,"high":false,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false},{"servesHome":true,"parentRating":0,"distanceInMiles":"6.4","gradeRanges":"K to 12","institutionType":"Public","name":"École Des Pionniers","schoolUrl":"/bc/school/cole-des-pionniers/236723","searchUrl":"/bc/school/cole-des-pionniers/236723","id":236723,"fullAddress":"3550 Wellington St, Port Coquitlam, BC V3B 3Y5","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":true,"middle":false,"high":true,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false}],"middleSchools":[],"highSchools":[{"servesHome":true,"parentRating":0,"distanceInMiles":"1.7","gradeRanges":"8 to 12","institutionType":"Public","name":"Burnaby Mountain Secondary School","schoolUrl":"/bc/school/burnaby-mountain-secondary-school/237277","searchUrl":"/bc/school/burnaby-mountain-secondary-school/237277","id":237277,"fullAddress":"8800 Eastlake Dr, Burnaby, BC V3J 7X5","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":false,"middle":false,"high":true,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false},{"servesHome":true,"parentRating":0,"distanceInMiles":"6.4","gradeRanges":"K to 12","institutionType":"Public","name":"École Des Pionniers","schoolUrl":"/bc/school/cole-des-pionniers/236723","searchUrl":"/bc/school/cole-des-pionniers/236723","id":236723,"fullAddress":"3550 Wellington St, Port Coquitlam, BC V3B 3Y5","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":true,"middle":false,"high":true,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false}],"servingThisHomeSchools":[{"servesHome":true,"parentRating":0,"distanceInMiles":"0.2","gradeRanges":"K to 7","institutionType":"Public","name":"University Highlands Elementary School","schoolUrl":"/bc/school/university-highlands-elementary-school/237617","searchUrl":"/bc/school/university-highlands-elementary-school/237617","id":237617,"fullAddress":"9388 Tower Rd, Burnaby, BC V5A 4X6","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":true,"middle":false,"high":false,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false},{"servesHome":true,"parentRating":0,"distanceInMiles":"6.4","gradeRanges":"K to 12","institutionType":"Public","name":"École Des Pionniers","schoolUrl":"/bc/school/cole-des-pionniers/236723","searchUrl":"/bc/school/cole-des-pionniers/236723","id":236723,"fullAddress":"3550 Wellington St, Port Coquitlam, BC V3B 3Y5","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":true,"middle":false,"high":true,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false},{"servesHome":true,"parentRating":0,"distanceInMiles":"1.7","gradeRanges":"8 to 12","institutionType":"Public","name":"Burnaby Mountain Secondary School","schoolUrl":"/bc/school/burnaby-mountain-secondary-school/237277","searchUrl":"/bc/school/burnaby-mountain-secondary-school/237277","id":237277,"fullAddress":"8800 Eastlake Dr, Burnaby, BC V3J 7X5","numReviews":0,"schoolReviews":[],"schoolGranularRatings":[],"elementary":false,"middle":false,"high":true,"lastUpdatedDate":"Sep 23, 2020","hasMultipleCatchmentAreas":false}],"totalSchoolsServiced":3,"sectionPreviewText":"No school information","shouldHideSection":false},"publicRecordsInfo":{"basicInfo":{"beds":2,"baths":2.5,"propertyTypeName":"Townhouse","yearBuilt":2004,"sqFtFinished":1044,"totalSqFt":1044,"apn":"026111012","propertyLastUpdatedDate":1617972347070,"displayTimeZone":"America/Vancouver"},"taxInfo":{},"allTaxInfo":[{"taxableLandValue":198000,"taxableImprovementValue":284000,"rollYear":2021},{"taxableLandValue":198000,"taxableImprovementValue":284000,"rollYear":2020},{"taxableLandValue":170000,"taxableImprovementValue":281000,"rollYear":2019}],"addressInfo":{"isFMLS":false,"street":"9284 University Cres","city":"Burnaby","state":"BC","zip":"V5A 4X9","countryCode":"CA"},"mortgageCalculatorInfo":{"displayLevel":1,"dataSourceId":256,"listingPrice":599900,"downPaymentPercentage":20.0,"monthlyHoaDues":443,"propertyTaxRate":0.36856142690448407,"homeInsuranceRate":0.54,"mortgageInsuranceRate":0.75,"creditScore":740,"loanType":4,"mortgageRateInfo":{"fifteenYearFixed":3.25,"fiveOneArm":3.6249999999999996,"thirtyYearFixed":3.875,"isFromBankrate":false,"twentyFiveYearAmortizationFiveYearTerm":4.0},"mortgageRatesPageLinkText":"View all rates","zipCode":"","dpaEligible":false,"dprLink":""},"countyName":"Greater Vancouver Regional District","countyIsActive":true,"sectionPreviewText":"County data refreshed on 04/09/2021"},"propertyHistoryInfo":{"isHistoryStillGrowing":false,"hasAdminContent":false,"hasLoginContent":true,"dataSourceId":256,"canSeeListing":true,"listingIsNull":false,"hasPropertyHistory":true,"showLogoInLists":false,"definitions":[],"displayTimeZone":"America/Vancouver","isAdminOnlyView":false,"events":[{"isEventAdminOnly":false,"price":599900,"isPriceAdminOnly":false,"eventDescription":"Listed","mlsDescription":"Active","source":"REBGV","sourceId":"R2506452","dataSourceDisplay":{"dataSourceId":256,"dataSourceDescription":"Real Estate Board of Greater Vancouver (REBGV)","dataSourceName":"REBGV","dataSourceImage":"rebgv_small.png","shouldShowLargerLogo":false},"priceDisplayLevel":1,"historyEventType":1,"eventDate":1601881200000},{"isEventAdminOnly":false,"isPriceAdminOnly":true,"eventDescription":"Listed","mlsDescription":"Active","source":"REBGV","sourceId":"R2450464","dataSourceDisplay":{"dataSourceId":256,"dataSourceDescription":"Real Estate Board of Greater Vancouver (REBGV)","dataSourceName":"REBGV","dataSourceImage":"rebgv_small.png","shouldShowLargerLogo":false},"priceDisplayLevel":5,"historyEventType":1,"eventDate":1586761200000},{"isEventAdminOnly":false,"price":399000,"isPriceAdminOnly":false,"eventDescription":"Listed","source":"REBGV","sourceId":"R2043961","dataSourceDisplay":{"dataSourceId":256,"dataSourceDescription":"Real Estate Board of Greater Vancouver (REBGV)","dataSourceName":"REBGV","dataSourceImage":"rebgv_small.png","shouldShowLargerLogo":false},"priceDisplayLevel":3,"historyEventType":1,"eventDate":1457510400000},{"isEventAdminOnly":false,"price":349900,"isPriceAdminOnly":false,"eventDescription":"Listed","source":"REBGV","sourceId":"V727377","dataSourceDisplay":{"dataSourceId":256,"dataSourceDescription":"Real Estate Board of Greater Vancouver (REBGV)","dataSourceName":"REBGV","dataSourceImage":"rebgv_small.png","shouldShowLargerLogo":false},"priceDisplayLevel":3,"historyEventType":1,"eventDate":1217919600000},{"isEventAdminOnly":false,"price":359900,"isPriceAdminOnly":false,"eventDescription":"Listed","source":"REBGV","sourceId":"V587633","dataSourceDisplay":{"dataSourceId":256,"dataSourceDescription":"Real Estate Board of Greater Vancouver (REBGV)","dataSourceName":"REBGV","dataSourceImage":"rebgv_small.png","shouldShowLargerLogo":false},"priceDisplayLevel":3,"historyEventType":1,"eventDate":1145602800000}],"mediaBrowserInfoBySourceId":{"R2043961":{"photos":[{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":959,"width":640},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":583,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000},{"displayLevel":3,"dataSourceId":256,"height":667,"width":1000}],"scans":[],"isHot":false,"streetView":{"latLong":{"latitude":49.2786136,"longitude":-122.9035746},"streetViewUrl":"https://maps.googleapis.com/maps/api/streetview?channel\u003dmb-ldp-publicrecord\u0026location\u003d9284+University+Cres%2C+Burnaby%2C+BC+V5A+0A4\u0026size\u003d665x441\u0026source\u003doutdoor\u0026client\u003dgme-redfin\u0026signature\u003d4mXb3oWfHWs9XqoAQLBxuWImgZM\u003d","displayLevel":1,"dataSourceId":256,"streetViewAvailable":true},"altTextForImage":"9284 University Cres, Burnaby, BC V5A 4X9","assembledAddress":"9284 University Cres","previousListingPhotosCount":0,"displayType":1},"R2450464":{"photos":[],"scans":[{"scanUrl":"https://my.matterport.com/show/?m\u003dXcXZq3a3Q2t","externalVirtualHomeScanId":"XcXZq3a3Q2t","posterFrameUrl":"https://my.matterport.com/api/v2/player/models/XcXZq3a3Q2t/thumb","scanHost":0}],"isHot":false,"streetView":{"latLong":{"latitude":49.2786136,"longitude":-122.9035746},"streetViewUrl":"https://maps.googleapis.com/maps/api/streetview?channel\u003dmb-ldp-publicrecord\u0026location\u003d9284+University+Cres%2C+Burnaby%2C+BC+V5A+0A4\u0026size\u003d665x441\u0026source\u003doutdoor\u0026client\u003dgme-redfin\u0026signature\u003d4mXb3oWfHWs9XqoAQLBxuWImgZM\u003d","displayLevel":1,"dataSourceId":256,"streetViewAvailable":false},"assembledAddress":"MLS #: R2450464","previousListingPhotosCount":0,"displayType":2}},"addressInfo":{"isFMLS":false,"street":"9284 University Cres","city":"Burnaby","state":"BC","zip":"V5A 4X9","countryCode":"CA"},"isFMLS":false,"historyHasHiddenRows":true,"priceEstimates":{"displayLevel":1,"priceHomeUrl":"/what-is-my-home-worth?estPropertyId\u003d155239008\u0026src\u003dldp-estimates"},"sectionPreviewText":"No property history on this home"},"mlsDisclaimerInfo":{"showDisclaimerWithMlsInfo":true,"showDisclaimerInFooter":false,"listingBrokerName":"Jovi Realty Inc.","mlsDisclaimer":"\u003cimg src\u003d\"${IMAGE_SERVER}/images/logos/rebgv_large.png\"/\u003e\u003cp\u003eThis representation is based in whole or in part on data generated by the Chilliwack \u0026 District Real Estate Board, Fraser Valley Real Estate Board or Real Estate Board of Greater Vancouver which assumes no responsibility for its accuracy. Listing information displayed on the MLS® VOW is deemed reliable but is not guaranteed accurate by the Board.\u003c/p\u003e","mlsDislcaimerPlainText":"This representation is based in whole or in part on data generated by the Chilliwack \u0026 District Real Estate Board, Fraser Valley Real Estate Board or Real Estate Board of Greater Vancouver which assumes no responsibility for its accuracy. Listing information displayed on the MLS® VOW is deemed reliable but is not guaranteed accurate by the Board.","lastUpdatedString":"Apr 13, 2021 12:22 AM","logoImageFileName":"rebgv_small.png","listingBrokerNumber":"604-202-2929","listingAgentName":"Valerie Dudchenko","listingAgentNumber":"778-892-4462"}}}
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
+
+async function getAmenities(propertyId, listingId, headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    // also mc-mv=1617991667260, mc-dsov=1617213270019, mc-mlsv=1617835433462, mc-ccv=-400856821, mc-api=2
+    const urlParams = {
+        propertyId,
+        listingId,
+        accessLevel: '1',
+        'android-app-version-code': '380'
+    };
+
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getAmenitiesApi}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
+
+async function getAboveTheFold(propertyId, listingId, headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        propertyId,
+        listingId,
+        accessLevel: '1',
+        'supported_virtualtour_sources': '0,1,2',
+        'android-app-version-code': '380'
+    };
+
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getAboveTheFoldApi}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
+
+async function getBelowTheFold(propertyId, listingId, headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        propertyId,
+        listingId,
+        accessLevel: '1',
+        'android-app-version-code': '380'
+    };
+
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getBelowTheFoldApi}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
 
 module.exports = {
     propertyTypes,
     regions,
     getHomes,
+    getTourInsights,
+    getWalkScore,
     getCommute,
-    getTourInsights
+    getPopularityInfo,
+    getAmenities,
+    getAboveTheFold,
+    getBelowTheFold
 };
