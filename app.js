@@ -1,11 +1,11 @@
 require('dotenv').config();
 const _interval = 15 * 60 * 1000;
 
-const { getHomes, getCommute, getTourInsights } = require('./redfin');
+const redfin = require('./redfin');
 const { bot, broadcast } = require('./telegram');
 
 async function update() {
-    const res = await getHomes({
+    const res = await redfin.getHomes({
         'max_price': '400000',
         'num_beds': '2',
         'min_listing_approx_size': '1000'
@@ -16,16 +16,12 @@ async function update() {
     }
     
     console.log(res.length);
-
-    // const r = await getTourInsights(res[0].propertyId, res[0].listingId);
-    // console.log(r);
-    
     // merge with database
 }
 
-//bot.launch();
+bot.launch();
 
 update();
-// setInterval(async () => {
-//     await update();
-// }, _interval);
+setInterval(async () => {
+    await update();
+}, _interval);
