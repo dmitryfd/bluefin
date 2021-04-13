@@ -1,7 +1,7 @@
 require('dotenv').config();
 const _interval = 15 * 60 * 1000;
 
-const { getHomes } = require('./bluefin');
+const { getHomes } = require('./redfin');
 const { bot, broadcast } = require('./telegram');
 
 async function update() {
