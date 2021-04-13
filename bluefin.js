@@ -1,4 +1,4 @@
-const _bluefin = atob('cmVkZmlu');
+const _bluefin = Buffer.from('cmVkZmlu', 'base64').toString();
 const _api = `https://www.${_bluefin}.ca/stingray/api/gis`;
 
 const _mortgageDownPayment = 0.20;
@@ -23,7 +23,7 @@ const _defaultParams = {
     'include_nearby_homes': 'true',
     'market': 'britishcolumbia',
     'num_homes': '350',
-    'ord': `${_bluefin}-recommended-asc`,
+    'ord': 'price-asc',
     'page_number': '1',
     'region_id': '3790,3791',
     'region_type': '33,33',
@@ -36,7 +36,7 @@ const _defaultParams = {
 
 const axios = require('axios').default;
 
-async function get(params, headers) {
+async function getHomes(params, headers) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
     
     const urlParams = { ..._defaultParams, ...params };
@@ -98,63 +98,70 @@ function transform(x) {
         has3DTour: x.has3DTour,
         hasSelfTour: x.hasSelfTour,
         isNew: x.isNewConstruction,
-        rawPhotos: x.photos && x.photos.value,
-
-        get address() {
-            return `${this.streetLine}, ${this.city}`;
-        },
-
-        get mapUrl() {
-            return `https://www.google.com/maps/place/${this.lat},${this.long}`;
-        },
-
-        get mortgagePayment() {
-            const P = this.price * (1 - _mortgageDownPayment);
-            const r = _mortgageInterestRate / _mortgagePaymentsPerYear;
-            const n = _mortgagePaymentsPerYear * _mortgageTermYears;
-
-            const x = Math.pow(1 + r, n);
-
-            return P * r * x / (x - 1);
-        },
-
-        get taxPayment() {
-            return this.price * _taxYearlyRate / 12;
-        },
-
-        get insurancePayment() {
-            return this.price * _insuranceYearlyRate / 12;
-        },
-
-        get totalPayment() {
-            return this.mortgagePayment + this.taxPayment + this.insurancePayment + this.hoaPayment;
-        },
-
-        get photos() {
-            if (!this.id || !this.photos)
-            {
-                return null;
-            }
-
-            const idEnd = this.id.slice(-3);
-    
-            const photoIds = this.photos
-                .split(',')
-                .map(x => {
-                    var split = x.split(':');
-                    var photoId = (split && split.length == 2) ? split[1] : null;
-    
-                    return photoId ? `https://ssl.cdn-${_bluefin}.com/photo/256/islphoto/${idEnd}/genIslnoResize.${this.id}_${photoId}.jpg` : null;
-                })
-                .filter(x => !!x);
-    
-            return photoIds;
-        }
+        description: x.listingRemarks,
+        insight: x.insight && x.insight.value && x.insight.value.note,
+        status: 'active'
     };
+
+    obj.address = getAddress(obj.streetLine, obj.city); 
+    obj.mapUrl = getMapUrl(obj.lat, obj.long); 
+    obj.photos = getPhotos(obj.id, x.photos && x.photos.value); 
+
+    obj.mortgagePayment = getMortgagePayment(obj.price);
+    obj.taxPayment = getTaxPayment(obj.price); 
+    obj.insurancePayment = getInsurancePayment(obj.price); 
+    obj.totalPayment = obj.mortgagePayment + obj.taxPayment + obj.insurancePayment + obj.hoaPayment;
 
     return obj;
 }
 
-export default {
+function getAddress(street, city) {
+    return `${street}, ${city}`;
+}
+
+function getMapUrl(lat, long) {
+    return `https://www.google.com/maps/place/${lat},${long}`;
+}
+
+function getMortgagePayment(price) {
+    const P = price * (1 - _mortgageDownPayment);
+    const r = _mortgageInterestRate / _mortgagePaymentsPerYear;
+    const n = _mortgagePaymentsPerYear * _mortgageTermYears;
+
+    const x = Math.pow(1 + r, n);
+
+    return P * r * x / (x - 1);
+}
+
+function getTaxPayment(price) {
+    return price * _taxYearlyRate / 12;
+}
+
+function getInsurancePayment(price) {
+    return price * _insuranceYearlyRate / 12;
+}
+
+function getPhotos(id, encodedPhotos) {
+    if (!id || !encodedPhotos)
+    {
+        return null;
+    }
+
+    const idEnd = id.slice(-3);
+
+    const photoIds = encodedPhotos
+        .split(',')
+        .map(x => {
+            var split = x.split(':');
+            var photoId = (split && split.length == 2) ? split[1] : null;
+
+            return photoId ? `https://ssl.cdn-${_bluefin}.com/photo/256/islphoto/${idEnd}/genIslnoResize.${id}_${photoId}.jpg` : null;
+        })
+        .filter(x => !!x);
+
+    return photoIds;
+}
+
+module.exports = {
     getHomes
 };
