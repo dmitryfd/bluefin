@@ -19,6 +19,7 @@ const propertyTypes = {
 
 const _getHomesApi = 'https://www.redfin.ca/stingray/mobile/v1/gis-proto-mobile';
 const _getCommuteApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/commute/commuteDuration/property/';
+const _getTourInsightsApi = 'https://www.redfin.com/stingray/mobile/api/1/home/details/tourInsights';
 
 const _mortgageDownPayment = 0.20;
 const _mortgageInterestRate = 0.019;
@@ -90,10 +91,11 @@ function transform(i) {
         return null;
     }
 
-    // also listingId, dataSourceId, marketId, businessMarketId, mlsStatusId
+    // also dataSourceId, marketId, businessMarketId, mlsStatusId
     const obj = {
         mlsId: x.mlsId,
         propertyId: x.propertyId,
+        listingId: x.listingId,
         price: x.priceInfo && parseInt(x.priceInfo.amount),
         searchStatus: x.listingMetadata && x.listingMetadata.searchStatus,
         type: x.propertyType,
@@ -156,8 +158,36 @@ function getInsurancePayment(price) {
     return price * _insuranceYearlyRate / 12;
 }
 
-// GET https://www.redfin.com/stingray/mobile/api/1/home/details/tourInsights?propertyId=155378604&listingId=125016081&accessLevel=1&android-app-version-code=380 HTTP/1.1
-// {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"noteCount":0,"tourCount":0,"primaryListingId":125016081,"displayLevel":1,"dataSourceId":256,"addressInfo":{"isFMLS":false,"street":"2528 E Broadway #201","city":"Vancouver","state":"BC","zip":"V5M 4V1","countryCode":"CA"},"displayTimeZone":"America/Vancouver","insightCreationPermission":3,"sectionPreviewText":"Redfin Agents haven\u0027t visited this home yet","showDisclaimer":false}}
+async function getTourInsights(propertyId, listingId, accessLevel = '1', headers = null) {
+    const finalHeaders = { ..._defaultHeaders, ...headers};
+    
+    const urlParams = {
+        propertyId,
+        listingId,
+        accessLevel,
+        'android-app-version-code': '380'
+    };
+
+    const urlParamsStr = new URLSearchParams(urlParams).toString();
+    const url = `${_getTourInsightsApi}?${urlParamsStr}`;
+
+    try {
+        const res = await axios(url, {
+            method: 'get',
+            headers: finalHeaders
+        });
+        
+        const json = res.data.replace('{}&&', '');
+        const obj = JSON.parse(json);
+        
+        return obj && obj.payload;
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    return null;
+}
 
 // GET https://www.redfin.com/stingray/mobile/api/v1/home/details/aboveTheFold?propertyId=155378604&accessLevel=1&listingId=125016081&supported_virtualtour_sources=0,1,2&android-app-version-code=380 HTTP/1.1
 // {}&&{"version":374,"errorMessage":"Success","resultCode":0,"payload":{"mainHouseInfo":{"listingId":125016081,"videoOpenHouses":[],"hotnessInfo":{"isHot":false,"hotnessMessageInfoWithTourLink":{"hotnessMessageAction":"go tour it now"}},"listingAgents":[{"agentInfo":{"agentName":"Rose Liapis","isAgentNameBlank":false,"isRedfinAgent":false,"isPartnerAgent":false,"isExternalAgent":false},"brokerName":"Goodrich Realty Inc.","agentEmailAddress":"roseliapis@yahoo.com","isOpendoor":false}],"buyingAgents":[],"remarksDisplayLevel":1,"marketingRemarks":[{"marketingRemark":"NW corner unit, spacious 2 bedroom  \u0026  den (or 3 bdrm), 2 baths and in suite laundry. Unit shows very well. Newer laminate floor in living room, dining room  \u0026  den. Fresh paint and crown mouldings. Updated shower and bathtub by Bathfitter, also new dishwasher, front loading washer and dryer. 2 parking stalls rent for $200/month both. Close to transit, elementary, high school and bus route to UBC. Leaky condo, must pay all cash, no finance available. Buyer pays special levy. Potential re-development site. Call for your private appointment. Masks must be worn at showing.  ","displayLevel":1}],"selectedAmenities":[{"header":"Maintenance Fee","content":"$460/month"},{"header":"Property Type","content":"Apartment/Condo"},{"header":"Property Style","content":"Corner Unit"},{"header":"Stories","content":"1"},{"header":"Community","content":"Renfrew Heights","displayLevel":1},{"header":"Region","content":"Greater Vancouver Regional District"},{"header":"MLS®#","content":"R2502255"},{"header":"Built","content":"1995"}],"showPriceHomeLink":false,"showClaimHomeLink":false,"alwaysShowAgentAttribution":false,"showOffMarketWarning":false,"propertyAddress":{"streetNumber":"2528","directionalPrefix":"E","streetName":"Broadway","streetType":"","directionalSuffix":"","unitType":"#","unitValue":"201","city":"Vancouver","stateOrProvinceCode":"BC","postalCode":"V5M 4T7","countryCode":"CA"},"propertyIsActivish":false,"isComingSoonListing":false,"hasOfferDeadlineInEffect":false,"isRedfinDirectEligible":false,"isOpendoorEligible":false,"isBDXEligible":false,"isFMLS":false},"mediaBrowserInfo":{"scans":[],"videos":[],"isHot":false,"previousListingPhotosCount":0},"openHouseInfo":{"openHouseList":[]}}}
@@ -211,5 +241,6 @@ module.exports = {
     propertyTypes,
     regions,
     getHomes,
-    getCommute
+    getCommute,
+    getTourInsights
 };
