@@ -54,13 +54,13 @@ async function processResults(results) {
 
     const changes = {
         added: [],
-        modified: [],
-        existing: []
+        modified: []
     };
 
     for (const result of results) {
         const item = await db.getItem(result.id);
         if (!item) {
+            // TODO: Here is where we might want to obtain extended data
             changes.added.push(result);
             await db.addItem(result);
             log(`added: ${getAddress(result)}`);
@@ -71,9 +71,7 @@ async function processResults(results) {
             await db.replaceItem(result);
             log(`replaced: ${getAddress(result)}`);
         }
-        else {
-            changes.existing.push(result);
-        }
+        // TODO: What to do about deleted results?
     }
 
     return changes;
