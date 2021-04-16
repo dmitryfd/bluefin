@@ -1,3 +1,5 @@
+const deepEqual = require('deep-equal');
+
 const _mortgageDownPayment = 0.20;
 const _mortgageInterestRate = 0.019;
 const _mortgageTermYears = 30;
@@ -55,6 +57,21 @@ function log(msg) {
     console.log(msg);
 }
 
+function shouldUpdateItem(newItem, existingItem) {
+    if (!newItem) {
+        return false;
+    }
+
+    if (!existingItem) {
+        return true;
+    }
+
+    const existingItemCopy = { ...existingItem };
+    existingItemCopy.extended = null;
+
+    return !deepEqual(newItem, existingItemCopy);
+}
+
 module.exports = {
     stripMetadata,
     log,
@@ -63,5 +80,6 @@ module.exports = {
     getInsurancePayment,
     getMapUrl,
     getMortgagePayment,
-    getTaxPayment
+    getTaxPayment,
+    shouldUpdateItem
 };

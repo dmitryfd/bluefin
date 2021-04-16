@@ -1,3 +1,6 @@
+const he = require('he');
+const axios = require('axios').default;
+
 const regions = {
     vancouver: '3790',
     burnaby: '3791',
@@ -26,18 +29,15 @@ const _getAmenitiesApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/det
 const _getAboveTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/aboveTheFold';
 const _getBelowTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold';
 
-// X-RF-Android, appsflyer_id seem optional
-// Also has Cookie: RF_BROWSER_ID=Ac4WK5D8Q7SztfsqQY008w; RF_BID_UPDATED=1; RF_CORVAIR_LAST_VERSION=361.4.0; JSESSIONID=C0786834FAF7B79C22DCE68146724274; RF_BUSINESS_MARKET=97; RF_LAST_ACCESS=; RF_SECURE_AUTH=; RF_AUTH=; RF_W_AUTH=; RF_ACCESS_LEVEL=
+// 'X-RF-Android': '5cca9de45c86506e;Android/sdk_google_phone_x86/generic_x86:6.0/MASTER/6695544:userdebug/test-keys;Android;unknown;353.0.9;1;e6c972f9-073c-4abb-b5f2-06fcb43fbefe;353.0'
+// 'appsflyer_id': '1618291814710-216498166915512168'
+// 'Cookie': 'RF_BROWSER_ID=Ac4WK5D8Q7SztfsqQY008w; RF_BID_UPDATED=1; RF_CORVAIR_LAST_VERSION=361.4.0; JSESSIONID=C0786834FAF7B79C22DCE68146724274; RF_BUSINESS_MARKET=97; RF_LAST_ACCESS=; RF_SECURE_AUTH=; RF_AUTH=; RF_W_AUTH=; RF_ACCESS_LEVEL='
 const _defaultHeaders = {
     'User-Agent': 'Redfin Android 353.0.9',
     'Accept': 'application/json',
     'Accept-Encoding': 'gzip',
-    'Connection': 'keep-alive',
-    'X-RF-Android': '5cca9de45c86506e;Android/sdk_google_phone_x86/generic_x86:6.0/MASTER/6695544:userdebug/test-keys;Android;unknown;353.0.9;1;e6c972f9-073c-4abb-b5f2-06fcb43fbefe;353.0',
-    'appsflyer_id': '1618291814710-216498166915512168'
+    'Connection': 'keep-alive'
 };
-
-const axios = require('axios').default;
 
 async function getHomes(params, headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
@@ -116,7 +116,7 @@ function transform(i) {
         lastSoldDate: x.lastSaleData && x.lastSaleData.lastSoldDate || null,
         broker: x.brokers && x.brokers.listingBrokerAndAgent && x.brokers.listingBrokerAndAgent.brokerName || null,
         isNew: !!(x.listingMetadata && x.listingMetadata.isNewConstruction),
-        hasInsight: !!(x.insights && x.insights.hasInsight)
+        extended: null
     };
 
     return obj;
@@ -175,7 +175,7 @@ async function getWalkScore(propertyId, listingId, headers = null) {
         const json = res.data.replace('{}&&', '');
         const obj = JSON.parse(json);
         
-        return obj && obj.payload;
+        return obj && obj.payload && obj.payload.walkScoreData;
     }
     catch (err) {
         console.error(err);
@@ -206,9 +206,7 @@ async function getCommute(propertyId, commuteTypeId = '3', destinationLatitude =
         const json = res.data.replace('{}&&', '');
         const obj = JSON.parse(json);
         
-        if (obj && obj.payload) {
-            return obj.payload.formattedDuration;
-        }
+        return obj && obj.payload && obj.payload.formattedDuration;
     }
     catch (err) {
         console.error(err);
@@ -341,15 +339,72 @@ async function getBelowTheFold(propertyId, listingId, headers = null) {
     return null;
 }
 
+async function getExtendedData(item) {
+    if (!item) {
+        return null;
+    }
+
+    const extended = {};
+
+    const w = await getWalkScore(item.propertyId, item.listingId);
+    if (w) {
+        extended.walkScore = {
+            walk: w.walkScore && w.walkScore.value || null,
+            bike: w.bikeScore && w.bikeScore.valu || null,
+            transit: w.transitScore && w.transitScore.value || null,
+            desc: w.walkScore && w.walkScore.shortDescription || null
+        };
+    }
+
+    const c = await getCommute(item.propertyId);
+    if (c) {
+        const matches = c.match(/\d+/g);
+        if (!matches || matches.length == 0) {
+            extended.workCommute = null;
+        }
+        else if (matches.length == 1) {
+            extended.workCommute = parseInt(matches[0]);
+        }
+        else if (matches.length == 2) {
+            extended.workCommute = parseInt(matches[0]) * 60 + parseInt(matches[1]);
+        }
+    }
+
+    const af = await getAboveTheFold(item.propertyId, item.listingId);
+    if (af && af.mainHouseInfo && af.mainHouseInfo.marketingRemarks) {
+        extended.remarks = af.mainHouseInfo.marketingRemarks.map(x => he.decode(x.marketingRemark));
+    }
+    
+    // TODO: Schools, more detailed tax info, price history etc
+    // const bf = await getBelowTheFold(item.propertyId, item.listingId);
+
+    const a = await getAmenities(item.propertyId, item.listingId);
+    if (a && a.superGroups) {
+        extended.amenities = [];
+        for (const superGroup of a.superGroups) {
+            for (const group of superGroup.amenityGroups) {
+                for (const entry of group.amenityEntries) {
+                    extended.amenities.push({
+                        id: entry.referenceName || null,
+                        name: entry.amenityName && he.decode(entry.amenityName) || null,
+                        value: entry.amenityValues && entry.amenityValues.map(x => he.decode(x)).join(', ') || null
+                    });
+                }
+            }
+        }
+    }
+
+    const i = await getTourInsights(item.propertyId, item.listingId);
+    if (i && i.tourInsights) {
+        extended.insights = i.tourInsights.map(x => he.decode(x.note));
+    }
+
+    return extended;
+}
+
 module.exports = {
     propertyTypes,
     regions,
     getHomes,
-    getTourInsights,
-    getWalkScore,
-    getCommute,
-    getPopularityInfo,
-    getAmenities,
-    getAboveTheFold,
-    getBelowTheFold
+    getExtendedData
 };

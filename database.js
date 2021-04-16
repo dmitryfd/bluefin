@@ -12,7 +12,7 @@ const itemsContainer = database.container('items');
 const configContainer = database.container('config');
 
 const defaultConfig = {
-    updateInterval: 900000,
+    updateInterval: 15,
     maxPrice: 750000,
     minSqft: 1000,
     minBeds: 2

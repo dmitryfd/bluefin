@@ -1,12 +1,10 @@
 require('dotenv').config();
 
-const deepEqual = require('deep-equal');
-
 const db = require('./database');
 const redfin = require('./redfin');
 const { bot, broadcast } = require('./telegram');
 const { printAdded } = require('./printer');
-const { log, getAddress } = require('./utils');
+const { log, getAddress, shouldUpdateItem } = require('./utils');
 
 async function init() {
     await db.init();
@@ -18,18 +16,20 @@ async function init() {
     if (updateInterval > 0) {
         setInterval(async () => {
             await update();
-        }, updateInterval);
+        }, updateInterval * 1000 * 60);
     }
+
+    // TODO: Clean up deleted results every now and then
 }
 
 async function update() {
-    log(`--- starting update`);
+    log(`starting update`);
 
     const results = await getResults();
     const changes = await processResults(results);
     await notifyChanges(changes);
 
-    log(`--- finished update`);
+    log(`finished update`);
 }
 
 async function getResults() {
@@ -60,18 +60,25 @@ async function processResults(results) {
     for (const result of results) {
         const item = await db.getItem(result.id);
         if (!item) {
-            // TODO: Here is where we might want to obtain extended data
+            const extended = await redfin.getExtendedData(result);
+            if (extended) {
+                result.extended = extended;
+            }
+
             changes.added.push(result);
             await db.addItem(result);
-            log(`added: ${getAddress(result)}`);
+
+            log(`-- added: ${getAddress(result)}`);
         }
-        // TODO: This will need to ignore the extended data fields
-        else if (!deepEqual(result, item)) {
+        else if (shouldUpdateItem(result, item)) {
+            result.extended = item.extended;
+            // TODO: Consider whether extended data needs to be refreshed
+
             changes.modified.push(result);
             await db.replaceItem(result);
-            log(`replaced: ${getAddress(result)}`);
+
+            log(`-- replaced: ${getAddress(result)}`);
         }
-        // TODO: What to do about deleted results?
     }
 
     return changes;

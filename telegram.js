@@ -1,11 +1,16 @@
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
+const { log } = require('./utils');
+
 const _allowedUserIds = (process.env.TELEGRAM_ALLOWED_USERIDS || '').split(',');
 
 bot.use(async (ctx, next) => {
     if (_allowedUserIds.indexOf(ctx.chat.id.toString()) < 0) {
-        ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot! (${ctx.chat.id})}`);
+        const name = ctx.chat.type == 'private' ? ctx.chat.first_name : ctx.chat.title;
+        log(`unauthorized msg from ${name} (${ctx.chat.id})`);
+
+        ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot!`);
     }
     else {
         await next();
