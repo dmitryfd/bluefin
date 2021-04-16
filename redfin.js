@@ -26,15 +26,6 @@ const _getAmenitiesApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/det
 const _getAboveTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/aboveTheFold';
 const _getBelowTheFoldApi = 'https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold';
 
-const _mortgageDownPayment = 0.20;
-const _mortgageInterestRate = 0.019;
-const _mortgageTermYears = 30;
-const _mortgagePaymentsPerYear = 12;
-
-const _insuranceYearlyRate = 0.0054;
-
-const _taxYearlyRate = 0.0029;
-
 // X-RF-Android, appsflyer_id seem optional
 // Also has Cookie: RF_BROWSER_ID=Ac4WK5D8Q7SztfsqQY008w; RF_BID_UPDATED=1; RF_CORVAIR_LAST_VERSION=361.4.0; JSESSIONID=C0786834FAF7B79C22DCE68146724274; RF_BUSINESS_MARKET=97; RF_LAST_ACCESS=; RF_SECURE_AUTH=; RF_AUTH=; RF_W_AUTH=; RF_ACCESS_LEVEL=
 const _defaultHeaders = {
@@ -99,69 +90,36 @@ function transform(i) {
 
     // also dataSourceId, marketId, businessMarketId, mlsStatusId
     const obj = {
+        id: x.mlsId,
         mlsId: x.mlsId,
         propertyId: x.propertyId,
         listingId: x.listingId,
-        price: x.priceInfo && parseInt(x.priceInfo.amount),
-        searchStatus: x.listingMetadata && x.listingMetadata.searchStatus,
+        price: x.priceInfo && parseInt(x.priceInfo.amount) || null,
+        searchStatus: x.listingMetadata && x.listingMetadata.searchStatus || null,
         type: x.propertyType,
-        daysOnMarket: x.daysOnMarket && parseInt(x.daysOnMarket.daysOnMarket),
-        hoaPayment: x.hoaDues && parseInt(x.hoaDues.amount),
-        sqft: x.sqftInfo && parseInt(x.sqftInfo.amount),
+        daysOnMarket: x.daysOnMarket && parseInt(x.daysOnMarket.daysOnMarket) || null,
+        hoaPayment: x.hoaDues && parseInt(x.hoaDues.amount) || null,
+        sqft: x.sqftInfo && parseInt(x.sqftInfo.amount) || null,
         beds: x.beds,
         baths: x.baths,
-        location: x.addressInfo && x.addressInfo.location,
-        lat: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.latitude,
-        long: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.longitude,
-        streetLine: x.addressInfo && x.addressInfo.formattedStreetLine,
-        unit: x.addressInfo && x.addressInfo.unitNumber,
-        city: x.addressInfo && x.addressInfo.city,
-        state: x.addressInfo && x.addressInfo.state,
-        postalCode: x.addressInfo && x.addressInfo.zip,
-        country: x.addressInfo && x.addressInfo.countryCode,
-        yearBuilt: x.yearBuilt && x.yearBuilt.yearBuilt,
+        location: x.addressInfo && x.addressInfo.location || null,
+        lat: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.latitude || null,
+        long: x.addressInfo && x.addressInfo.centroid && x.addressInfo.centroid.centroid && x.addressInfo.centroid.centroid.longitude || null,
+        streetLine: x.addressInfo && x.addressInfo.formattedStreetLine || null,
+        unit: x.addressInfo && x.addressInfo.unitNumber || null,
+        city: x.addressInfo && x.addressInfo.city || null,
+        state: x.addressInfo && x.addressInfo.state || null,
+        postalCode: x.addressInfo && x.addressInfo.zip || null,
+        country: x.addressInfo && x.addressInfo.countryCode || null,
+        yearBuilt: x.yearBuilt && x.yearBuilt.yearBuilt || null,
         url: `https://redfin.ca${x.url}`,
-        lastSoldDate: x.lastSaleData && x.lastSaleData.lastSoldDate,
-        broker: x.brokers && x.brokers.listingBrokerAndAgent && x.brokers.listingBrokerAndAgent.brokerName,
+        lastSoldDate: x.lastSaleData && x.lastSaleData.lastSoldDate || null,
+        broker: x.brokers && x.brokers.listingBrokerAndAgent && x.brokers.listingBrokerAndAgent.brokerName || null,
         isNew: !!(x.listingMetadata && x.listingMetadata.isNewConstruction),
         hasInsight: !!(x.insights && x.insights.hasInsight)
     };
 
-    obj.address = getAddress(obj.streetLine, obj.city); 
-    obj.mapUrl = getMapUrl(obj.lat, obj.long); 
-    obj.mortgagePayment = getMortgagePayment(obj.price);
-    obj.taxPayment = getTaxPayment(obj.price); 
-    obj.insurancePayment = getInsurancePayment(obj.price); 
-    obj.totalPayment = obj.mortgagePayment + obj.taxPayment + obj.insurancePayment + obj.hoaPayment;
-    obj.pricePerSqft = obj.price / obj.sqft;
-    
     return obj;
-}
-
-function getAddress(street, city) {
-    return `${street}, ${city}`;
-}
-
-function getMapUrl(lat, long) {
-    return `https://www.google.com/maps/place/${lat},${long}`;
-}
-
-function getMortgagePayment(price) {
-    const P = price * (1 - _mortgageDownPayment);
-    const r = _mortgageInterestRate / _mortgagePaymentsPerYear;
-    const n = _mortgagePaymentsPerYear * _mortgageTermYears;
-
-    const x = Math.pow(1 + r, n);
-
-    return P * r * x / (x - 1);
-}
-
-function getTaxPayment(price) {
-    return price * _taxYearlyRate / 12;
-}
-
-function getInsurancePayment(price) {
-    return price * _insuranceYearlyRate / 12;
 }
 
 async function getTourInsights(propertyId, listingId, headers = null) {
