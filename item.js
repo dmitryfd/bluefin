@@ -45,7 +45,7 @@ class Item {
     }
 
     get mentionsTrain() {
-        return this.normalizedRemark && this.normalizedRemark.indexOf('train') >= 0; 
+        return this.normalizedRemark && (this.normalizedRemark.indexOf('train') >= 0 || this.normalizedRemark.indexOf('station') >= 0); 
     }
 
     get mentionsDen() {
