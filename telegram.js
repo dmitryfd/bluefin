@@ -25,6 +25,24 @@ bot.start(ctx => {
     ctx.replyWithMarkdown(`👋 Hey there, ${name} (${id})!`);
 });
 
+bot.command('get', ctx => {
+    const tokens = ctx.message.text.split(' ');
+    if (tokens.length != 2) {
+        ctx.replyWithMarkdown(`😥 Couldn't process that`);
+        return;
+    }
+
+    const id = tokens[1];
+    const value = config[id];
+
+    if (typeof value == 'undefined') {
+        ctx.replyWithMarkdown(`👎 Such setting does not exist`);
+    }
+    else {
+        ctx.replyWithMarkdown(`👍 ${JSON.stringify(value)}`);
+    }
+});
+
 bot.command('set', async (ctx) => {
     const c = parseConfigCommand(ctx.message.text);
     if (!c || !c.id || !c.value) {
@@ -34,6 +52,8 @@ bot.command('set', async (ctx) => {
 
     const status = await config.set(c.id, c.value);
     ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+
+    log(`${status ? '' : 'failed to '}set ${c.id} to ${c.value}`);
 });
 
 bot.command('setInt', async (ctx) => {
@@ -51,6 +71,8 @@ bot.command('setInt', async (ctx) => {
 
     const status = await config.set(c.id, intValue);
     ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+
+    log(`${status ? '' : 'failed to '}set ${c.id} to ${intValue}`);
 });
 
 bot.command('setFloat', async (ctx) => {
@@ -68,6 +90,8 @@ bot.command('setFloat', async (ctx) => {
 
     const status = await config.set(c.id, floatValue);
     ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+
+    log(`${status ? '' : 'failed to '}set ${c.id} to ${floatValue}`);
 });
 
 bot.command('setArray', async (ctx) => {
@@ -81,6 +105,8 @@ bot.command('setArray', async (ctx) => {
 
     const status = await config.set(c.id, arrayValue);
     ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+
+    log(`${status ? '' : 'failed to '}set ${c.id} to [${c.value}]`);
 });
 
 async function broadcast(msg, opts) {
