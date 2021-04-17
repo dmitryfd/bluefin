@@ -1,4 +1,5 @@
 const { configContainer } = require('./database');
+const { log } = require('./utils');
 
 class Config {
     constructor() {
@@ -22,6 +23,7 @@ class Config {
                 this[resource.id] = resource.value;
             }
         }
+        log(`got latest config from db`);
     }
     
     async set(id, value) {
