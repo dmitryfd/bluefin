@@ -1,20 +1,22 @@
 require('dotenv').config();
 
-const db = require('./database');
 const redfin = require('./redfin');
+const config = require('./config');
+const { initDatabase } = require('./database');
+const { getItem, addItem, replaceItem } = require('./items');
 const { bot, broadcast } = require('./telegram');
-const { printAdded } = require('./printer');
-const { log, getAddress, shouldUpdateItem } = require('./utils');
+const { log, shouldUpdateItem } = require('./utils');
 
 async function init() {
-    await db.init();
-    
+    await initDatabase();
+    await config.sync();
     await bot.launch();
     await update();
-    
-    const updateInterval = await db.getConfig('updateInterval');
+
+    const updateInterval = config.updateInterval || 0;
     if (updateInterval > 0) {
         setInterval(async () => {
+            await config.sync();
             await update();
         }, updateInterval * 1000 * 60);
     }
@@ -33,9 +35,9 @@ async function update() {
 }
 
 async function getResults() {
-    const maxPrice = await db.getConfig('maxPrice');
-    const minBeds = await db.getConfig('minBeds');
-    const minSqft = await db.getConfig('minSqft');
+    const maxPrice = config.maxPrice;
+    const minBeds = config.minBeds;
+    const minSqft = config.minSqft;
 
     const res = await redfin.getHomes({
         'max_price': maxPrice,
@@ -58,7 +60,7 @@ async function processResults(results) {
     };
 
     for (const result of results) {
-        const item = await db.getItem(result.id);
+        const item = await getItem(result.id);
         if (!item) {
             const extended = await redfin.getExtendedData(result);
             if (extended) {
@@ -66,18 +68,18 @@ async function processResults(results) {
             }
 
             changes.added.push(result);
-            await db.addItem(result);
+            await addItem(result);
 
-            log(`-- added: ${getAddress(result)}`);
+            log(`-- added: ${result.address}`);
         }
         else if (shouldUpdateItem(result, item)) {
             result.extended = item.extended;
             // TODO: Consider whether extended data needs to be refreshed
 
             changes.modified.push(result);
-            await db.replaceItem(result);
+            await replaceItem(result);
 
-            log(`-- replaced: ${getAddress(result)}`);
+            log(`-- replaced: ${result.address}`);
         }
     }
 
@@ -86,7 +88,7 @@ async function processResults(results) {
 
 async function notifyChanges(changes) {
     for (const item of changes.added) {
-        broadcast(printAdded(item));
+        broadcast(item.print());
     }
 }
 

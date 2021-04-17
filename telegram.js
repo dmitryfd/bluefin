@@ -1,15 +1,16 @@
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
+const config = require('./config');
 const { log } = require('./utils');
 
-const _allowedUserIds = (process.env.TELEGRAM_ALLOWED_USERIDS || '').split(',');
-
 bot.use(async (ctx, next) => {
-    if (_allowedUserIds.indexOf(ctx.chat.id.toString()) < 0) {
-        const name = ctx.chat.type == 'private' ? ctx.chat.first_name : ctx.chat.title;
-        log(`unauthorized msg from ${name} (${ctx.chat.id})`);
+    const allowedUsers = config.allowedUsers || [];
+    const id = ctx.chat.id;
+    const name = ctx.chat.type == 'private' ? ctx.chat.first_name : ctx.chat.title;
 
+    if (allowedUsers.indexOf(id) < 0) {
+        log(`unauthorized msg from ${name} (${id})`);
         ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot!`);
     }
     else {
@@ -18,14 +19,17 @@ bot.use(async (ctx, next) => {
 });
 
 bot.start(ctx => {
+    const id = ctx.chat.id;
     const name = ctx.chat.type == 'private' ? ctx.chat.first_name : ctx.chat.title;
-    ctx.replyWithMarkdown(`👋 Hey there, ${name} (${ctx.chat.id})!`);
+
+    ctx.replyWithMarkdown(`👋 Hey there, ${name} (${id})!`);
 });
 
 async function broadcast(msg, opts) {
     opts = opts || { parse_mode: 'html' };
 
-    for (const userId of _allowedUserIds) {
+    const allowedUsers = config.allowedUsers || [];
+    for (const userId of allowedUserIds) {
         try {
             await bot.telegram.sendMessage(userId, msg, opts);
         }

@@ -1,6 +1,8 @@
 const he = require('he');
 const axios = require('axios').default;
 
+const Item = require('./item');
+
 const regions = {
     vancouver: '3790',
     burnaby: '3791',
@@ -56,8 +58,8 @@ async function getHomes(params, headers = null) {
         'status': '9',
         'uipt': propertyTypes.all,
         'v': '8', //6 on mobile?
-        'excl_ar': 'true', //works on mobile?
-        'excl_ll': 'true', //works on mobile?
+        'excl_ar': 'true',
+        'excl_ll': 'true',
         'android-app-version-code': '380'
     };
     
@@ -119,7 +121,7 @@ function transform(i) {
         extended: null
     };
 
-    return obj;
+    return Item.fromObject(obj);
 }
 
 async function getTourInsights(propertyId, listingId, headers = null) {
