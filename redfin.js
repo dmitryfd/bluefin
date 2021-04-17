@@ -99,7 +99,7 @@ function transform(i) {
         price: x.priceInfo && parseInt(x.priceInfo.amount) || null,
         searchStatus: x.listingMetadata && x.listingMetadata.searchStatus || null,
         type: x.propertyType,
-        daysOnMarket: x.daysOnMarket && parseInt(x.daysOnMarket.daysOnMarket) || null,
+        publishedDate: x.daysOnMarket && x.daysOnMarket.listingAddedDate || null,
         hoaPayment: x.hoaDues && parseInt(x.hoaDues.amount) || null,
         sqft: x.sqftInfo && parseInt(x.sqftInfo.amount) || null,
         beds: x.beds,

@@ -2,7 +2,7 @@ const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
 const config = require('./config');
-const { log, parseConfigCommand } = require('./utils');
+const { log } = require('./utils');
 
 bot.use(async (ctx, next) => {
     const allowedUsers = config.allowedUsers || [];
@@ -39,7 +39,7 @@ bot.command('get', ctx => {
         ctx.replyWithMarkdown(`👎 Such setting does not exist`);
     }
     else {
-        ctx.replyWithMarkdown(`👍 ${JSON.stringify(value)}`);
+        ctx.replyWithHTML(JSON.stringify(value));
     }
 });
 
@@ -57,69 +57,28 @@ bot.command('unset', async (ctx) => {
 });
 
 bot.command('set', async (ctx) => {
-    const c = parseConfigCommand(ctx.message.text);
-    if (!c || !c.id || !c.value) {
-        ctx.replyWithMarkdown(`😥 Couldn't process that`);
-        return;
-    }
+    const text = ctx.message.text;
+    if (text) {
+        const matches = text.match(/^\/?\w+ (\w+) (.*)$/);
+        if (matches && matches.length == 3) {
+            const id = matches[1].trim();
+            const valueJson = matches[2].trim();
+            try
+            {
+                const valueObj = JSON.parse(valueJson);
+                if (id && valueObj) {
+                    const status = await config.set(id, valueObj);
+                    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+                    return;
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }          
+        }
+    } 
 
-    const status = await config.set(c.id, c.value);
-    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
-
-    log(`${status ? '' : 'failed to '}set ${c.id} to ${c.value}`);
-});
-
-bot.command('setInt', async (ctx) => {
-    const c = parseConfigCommand(ctx.message.text);
-    if (!c || !c.id || !c.value) {
-        ctx.replyWithMarkdown(`😥 Couldn't process that`);
-        return;
-    }
-
-    const intValue = parseInt(c.value);
-    if (isNaN(intValue)) {
-        ctx.replyWithMarkdown(`😥 Couldn't parse as int`);
-        return;
-    }
-
-    const status = await config.set(c.id, intValue);
-    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
-
-    log(`${status ? '' : 'failed to '}set ${c.id} to ${intValue}`);
-});
-
-bot.command('setFloat', async (ctx) => {
-    const c = parseConfigCommand(ctx.message.text);
-    if (!c || !c.id || !c.value) {
-        ctx.replyWithMarkdown(`😥 Couldn't process that`);
-        return;
-    }
-
-    const floatValue = parseFloat(c.value);
-    if (isNaN(floatValue)) {
-        ctx.replyWithMarkdown(`😥 Couldn't parse as float`);
-        return;
-    }
-
-    const status = await config.set(c.id, floatValue);
-    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
-
-    log(`${status ? '' : 'failed to '}set ${c.id} to ${floatValue}`);
-});
-
-bot.command('setArray', async (ctx) => {
-    const c = parseConfigCommand(ctx.message.text);
-    if (!c || !c.id || !c.value) {
-        ctx.replyWithMarkdown(`😥 Couldn't process that`);
-        return;
-    }
-
-    const arrayValue = c.value.split(',');
-
-    const status = await config.set(c.id, arrayValue);
-    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
-
-    log(`${status ? '' : 'failed to '}set ${c.id} to [${c.value}]`);
+    ctx.replyWithMarkdown(`😥 Couldn't process that`);
 });
 
 async function broadcast(msg, opts) {

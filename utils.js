@@ -31,22 +31,6 @@ function shouldUpdateItem(newItem, existingItem) {
     return !deepEqual(newItem, existingItemCopy);
 }
 
-function parseConfigCommand(text) {
-    if (!text) {
-        return null;
-    }
-
-    const matches = text.match(/^\/?\w+ (\w+) (.*)$/);
-    if (!matches || matches.length != 3) {
-        return null;
-    }
-
-    return {
-        id: matches[1],
-        value: matches[2]
-    };
-}
-
 function k(n) {
     return (n / 1000).toFixed(1) + 'K';
 }
@@ -55,11 +39,21 @@ function r(n) {
     return Math.round(n);
 }
 
+function map(x, min, max) {
+    const adjustedMax = max - min;
+    
+    let adjustedX = x - min;
+    adjustedX = Math.min(adjustedX, adjustedMax);
+    adjustedX = Math.max(adjustedX, 0);
+
+    return adjustedX / adjustedMax;
+}
+
 module.exports = {
     stripMetadata,
     log,
     shouldUpdateItem,
-    parseConfigCommand,
     k,
-    r
+    r,
+    map
 };

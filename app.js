@@ -5,7 +5,7 @@ const config = require('./config');
 const { initDatabase } = require('./database');
 const { getItem, addItem, replaceItem } = require('./items');
 const { bot, broadcast } = require('./telegram');
-const { log, shouldUpdateItem } = require('./utils');
+const { log, shouldUpdateItem, r, k } = require('./utils');
 
 async function init() {
     await initDatabase();
@@ -13,6 +13,7 @@ async function init() {
     await bot.launch();
     await update();
 
+    // TODO: updateInterval is read once, not dynamically
     const updateInterval = config.updateInterval || 0;
     if (updateInterval > 0) {
         setInterval(async () => {
@@ -30,6 +31,7 @@ async function update() {
     const results = await getResults();
     const changes = await processResults(results);
     await notifyChanges(changes);
+    // displayExistingItemsWithScores(changes);
 
     log(`finished update`);
 }
@@ -56,7 +58,8 @@ async function processResults(results) {
 
     const changes = {
         added: [],
-        modified: []
+        modified: [],
+        existing: []
     };
 
     for (const result of results) {
@@ -81,6 +84,9 @@ async function processResults(results) {
 
             log(`-- replaced: ${result.address}`);
         }
+        else {
+            changes.existing.push(item);
+        }
     }
 
     return changes;
@@ -89,6 +95,13 @@ async function processResults(results) {
 async function notifyChanges(changes) {
     for (const item of changes.added) {
         broadcast(item.print());
+    }
+}
+
+function displayExistingItemsWithScores(changes) {
+    changes.existing.sort((a, b) => b.score.finalScore - a.score.finalScore);
+    for (const item of changes.existing) {
+        log(`[${r(item.score.finalScore * 100)}] ${k(item.price)} in ${item.location} (${item.sqft} sqft) - ${item.url}`);
     }
 }
 
