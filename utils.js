@@ -31,6 +31,22 @@ function shouldUpdateItem(newItem, existingItem) {
     return !deepEqual(newItem, existingItemCopy);
 }
 
+function parseConfigCommand(text) {
+    if (!text) {
+        return null;
+    }
+
+    const matches = text.match(/^\/?\w+ (\w+) (.*)$/);
+    if (!matches || matches.length != 3) {
+        return null;
+    }
+
+    return {
+        id: matches[1],
+        value: matches[2]
+    };
+}
+
 function k(n) {
     return (n / 1000).toFixed(1) + 'K';
 }
@@ -43,6 +59,7 @@ module.exports = {
     stripMetadata,
     log,
     shouldUpdateItem,
+    parseConfigCommand,
     k,
     r
 };

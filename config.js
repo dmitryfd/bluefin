@@ -3,7 +3,7 @@ const { log } = require('./utils');
 
 class Config {
     constructor() {
-        this.allowedUsers = [675685158];
+        this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
         this.maxPrice = 750000;
         this.minSqft = 1000;
@@ -23,14 +23,18 @@ class Config {
                 this[resource.id] = resource.value;
             }
         }
-        log(`got latest config from db`);
+        log(`synced config`);
     }
     
     async set(id, value) {
         const { resource } = await configContainer.items.upsert({ id, value });
+
         if (resource) {
             this[id] = value;
+            return true;
         }
+
+        return false;
     }
 }
 
