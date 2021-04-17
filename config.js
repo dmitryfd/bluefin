@@ -3,6 +3,10 @@ const { log } = require('./utils');
 
 class Config {
     constructor() {
+        this.reset();
+    }
+
+    reset() {
         this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
         this.maxPrice = 750000;
@@ -19,6 +23,7 @@ class Config {
     async sync() {
         const { resources } = await configContainer.items.readAll().fetchAll();
         if (resources) {
+            this.reset();
             for (const resource of resources) {
                 this[resource.id] = resource.value;
             }

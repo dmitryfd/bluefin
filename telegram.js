@@ -11,7 +11,7 @@ bot.use(async (ctx, next) => {
 
     if (allowedUsers.indexOf(id) < 0) {
         log(`unauthorized msg from ${name} (${id})`);
-        ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot!`);
+        ctx.replyWithMarkdown(`🛑 Sorry, you are not authorized to use this bot! (${id})`);
     }
     else {
         await next();
