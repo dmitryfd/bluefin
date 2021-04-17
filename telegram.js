@@ -43,6 +43,19 @@ bot.command('get', ctx => {
     }
 });
 
+bot.command('unset', async (ctx) => {
+    const tokens = ctx.message.text.split(' ');
+    if (tokens.length != 2) {
+        ctx.replyWithMarkdown(`😥 Couldn't process that`);
+        return;
+    }
+
+    const id = tokens[1];
+
+    const status = await config.unset(id);
+    ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
+});
+
 bot.command('set', async (ctx) => {
     const c = parseConfigCommand(ctx.message.text);
     if (!c || !c.id || !c.value) {

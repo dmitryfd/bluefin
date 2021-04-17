@@ -41,6 +41,16 @@ class Config {
 
         return false;
     }
+
+    async unset(id) {
+        try {
+            await configContainer.item(id).delete();
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
 }
 
 module.exports = new Config();
