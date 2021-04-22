@@ -66,7 +66,7 @@ bot.command('set', async (ctx) => {
             try
             {
                 const valueObj = JSON.parse(valueJson);
-                if (id && valueObj) {
+                if (id && typeof valueObj != 'undefined') {
                     const status = await config.set(id, valueObj);
                     ctx.replyWithMarkdown(status ? `👍 OK` : `👎 Failed`);
                     return;
