@@ -2,8 +2,8 @@ require('dotenv').config();
 
 const redfin = require('./redfin');
 const config = require('./config');
-const { initDatabase } = require('./database');
 const { getItem, addItem, replaceItem } = require('./items');
+const { initDatabase } = require('./database');
 const { bot, broadcast } = require('./telegram');
 const { log, shouldUpdateItem, r, k } = require('./utils');
 
@@ -93,7 +93,12 @@ async function processResults(results) {
 }
 
 async function notifyChanges(changes) {
+    if (config.mute) {
+        return;
+    }
+
     for (const item of changes.added) {
+        // TODO: Add notify criteria in config
         broadcast(item.print());
     }
 }

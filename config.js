@@ -9,11 +9,12 @@ class Config {
     reset() {
         this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
+        this.mute = false;
 
         this.maxPrice = 750000;
         this.minSqft = 1000;
         this.minBeds = 2;
-        
+
         this.mortgageDownPayment = 0.20;
         this.mortgageInterestRate = 0.019;
         this.mortgageTermYears = 30;
