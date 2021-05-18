@@ -10,6 +10,7 @@ class Config {
         this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
         this.mute = false;
+        this.topCount = 5;
 
         this.maxPrice = 750000;
         this.minSqft = 1000;

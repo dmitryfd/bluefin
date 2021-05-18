@@ -2,7 +2,8 @@ const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
 const config = require('./config');
-const { log } = require('./utils');
+const { log, r, k } = require('./utils');
+const { getItem, cleanItems, getLastUpdate } = require('./items');
 
 bot.use(async (ctx, next) => {
     const allowedUsers = config.allowedUsers || [];
@@ -79,6 +80,69 @@ bot.command('set', async (ctx) => {
     } 
 
     ctx.replyWithMarkdown(`😥 Couldn't process that`);
+});
+
+bot.command('top', async (ctx) => {
+    const changes = getLastUpdate();
+    if (!changes) {
+        ctx.replyWithMarkdown(`😥 Couldn't process that`);
+        return;
+    }
+    
+    changes.existing.sort((a, b) => b.score.finalScore - a.score.finalScore);
+    
+    const maxCount = config.topCount;
+    let i = 1;
+    let msg = 'Top listings by score:\n';
+
+    for (const item of changes.existing) {
+        msg += `${i}) <a href="${item.url}">[${r(100* item.score.finalScore)}] $${k(item.price)} in ${item.location}</a>\n`;
+        if (++i > maxCount) {
+            break;
+        }
+    }
+
+    ctx.replyWithHTML(msg);
+});
+
+bot.command('score', async (ctx) => {
+    const text = ctx.message.text;
+    if (text) {
+        const matches = text.match(/^\/?\w+ (R\d+)$/);
+        if (matches && matches.length == 2) {
+            const id = matches[1].trim();
+            try {
+                const item = await getItem(id);
+                if (item) {
+                    ctx.replyWithHTML(item.printScore());
+                }
+                else {
+                    ctx.replyWithMarkdown(`👎 Not found`);
+                }
+                return;
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+    }
+
+    ctx.replyWithMarkdown(`😥 Couldn't process that`);
+});
+
+bot.command('cleanup', async (ctx) => {
+    try {
+        const deleted = await cleanItems();
+        if (deleted >= 0) {
+            ctx.replyWithMarkdown(`👍 Deleted ${deleted} items`);
+            return;
+        }
+    }
+    catch (err) {
+        console.error(err);
+    }
+
+    ctx.replyWithMarkdown(`👎 Failed`);
 });
 
 async function broadcast(msg, opts) {

@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const redfin = require('./redfin');
 const config = require('./config');
-const { getItem, addItem, replaceItem } = require('./items');
+const { getItem, addItem, replaceItem, setLastUpdate } = require('./items');
 const { initDatabase } = require('./database');
 const { bot, broadcast } = require('./telegram');
 const { log, shouldUpdateItem, r, k } = require('./utils');
@@ -21,8 +21,6 @@ async function init() {
             await update();
         }, updateInterval * 1000 * 60);
     }
-
-    // TODO: Clean up deleted results every now and then
 }
 
 async function update() {
@@ -32,7 +30,6 @@ async function update() {
         const results = await getResults();
         const changes = await processResults(results);
         await notifyChanges(changes);
-        // displayExistingItemsWithScores(changes);
     }
     catch (err) {
         console.error(err);
@@ -97,6 +94,7 @@ async function processResults(results) {
 
     verbose(`finished update: +${changes.added.length}, ~${changes.modified.length}, ${changes.existing.length}`);
 
+    setLastUpdate(changes);
     return changes;
 }
 
@@ -114,13 +112,6 @@ async function notifyChanges(changes) {
 function verbose(msg) {
     if (config.verbose) {
         broadcast(msg);
-    }
-}
-
-function displayExistingItemsWithScores(changes) {
-    changes.existing.sort((a, b) => b.score.finalScore - a.score.finalScore);
-    for (const item of changes.existing) {
-        log(`[${r(item.score.finalScore * 100)}] ${k(item.price)} in ${item.location} (${item.sqft} sqft) - ${item.url}`);
     }
 }
 

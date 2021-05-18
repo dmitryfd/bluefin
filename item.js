@@ -136,6 +136,22 @@ $${k(this.downPayment)} down, ~$${r(this.totalPayment)}/mo
         
         return msg;
     }
+
+    printScore() {
+        const score = this.score;
+        
+        const scoreMsgs = [];
+        for (const key in score) {
+            scoreMsgs.push(`${key} = ${r(100 * score[key])}`)
+        }
+
+        const msg =
+`<u><b><a href="${this.url}">[${r(100* this.score.finalScore)}] $${k(this.price)} in ${this.location}</a></b></u>
+
+${scoreMsgs.join('\n')}`;
+
+        return msg;
+    }
 }
 
 Item.fromObject = function(obj) {
