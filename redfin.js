@@ -3,25 +3,6 @@ const axios = require('axios').default;
 
 const Item = require('./item');
 
-const regions = {
-    vancouver: '3790',
-    burnaby: '3791',
-    richmond: '3789',
-    northvan: '3279'
-}
-
-const propertyTypes = {
-    house: '1',
-    condo: '2',
-    townhouse: '3',
-    multifamily: '4',
-    land: '5',
-    other: '6',
-    manufactured: '7',
-    coop: '8',
-    all: '1,2,3,4,5,6,7,8'
-};
-
 const _getHomesApi = 'https://www.redfin.ca/stingray/mobile/v1/gis-proto-mobile';
 const _getCommuteApi = 'https://www.redfin.com/stingray/mobile/api/v1/home/details/commute/commuteDuration/property/';
 const _getTourInsightsApi = 'https://www.redfin.com/stingray/mobile/api/1/home/details/tourInsights';
@@ -47,16 +28,12 @@ async function getHomes(params, headers = null) {
     const defaultParams = {
         'al': '1', //3 on web?
         'include_nearby_homes': 'true', //remove?
-        'market': 'britishcolumbia',
-        'num_homes': '400',
+        'num_homes': '10000',
         'ord': 'price-asc',
         'page_number': '1',
-        'region_id': `${regions.vancouver},${regions.burnaby}`,
-        'region_type': '33,33',
         'sf': '1,2,5,6,7',
         'start': '0',
         'status': '9',
-        'uipt': propertyTypes.all,
         'v': '8', //6 on mobile?
         'excl_ar': 'true',
         'excl_ll': 'true',
@@ -186,7 +163,7 @@ async function getWalkScore(propertyId, listingId, headers = null) {
     return null;
 }
 
-async function getCommute(propertyId, commuteTypeId = '3', destinationLatitude = '49.2820597', destinationLongitude = '-123.1196942', headers = null) {
+async function getCommute(propertyId, commuteTypeId, destinationLatitude, destinationLongitude, headers = null) {
     const finalHeaders = { ..._defaultHeaders, ...headers};
     
     const urlParams = {
@@ -341,7 +318,7 @@ async function getBelowTheFold(propertyId, listingId, headers = null) {
     return null;
 }
 
-async function getExtendedData(item) {
+async function getExtendedData(item, options = null) {
     if (!item) {
         return null;
     }
@@ -352,23 +329,28 @@ async function getExtendedData(item) {
     if (w) {
         extended.walkScore = {
             walk: w.walkScore && w.walkScore.value || null,
-            bike: w.bikeScore && w.bikeScore.valu || null,
+            bike: w.bikeScore && w.bikeScore.value || null,
             transit: w.transitScore && w.transitScore.value || null,
             desc: w.walkScore && w.walkScore.shortDescription || null
         };
     }
 
-    const c = await getCommute(item.propertyId);
-    if (c) {
-        const matches = c.match(/\d+/g);
-        if (!matches || matches.length == 0) {
-            extended.workCommute = null;
-        }
-        else if (matches.length == 1) {
-            extended.workCommute = parseInt(matches[0]);
-        }
-        else if (matches.length == 2) {
-            extended.workCommute = parseInt(matches[0]) * 60 + parseInt(matches[1]);
+    const commuteTypeId = options && options.commuteTypeId;
+    const commuteLatitude = options && options.commuteLatitude;
+    const commuteLongitude = options && options.commuteLongitude;
+    if (commuteTypeId && commuteLatitude && commuteLongitude) {
+        const c = await getCommute(item.propertyId, commuteTypeId, commuteLatitude, commuteLongitude);
+        if (c) {
+            const matches = c.match(/\d+/g);
+            if (!matches || matches.length == 0) {
+                extended.workCommute = null;
+            }
+            else if (matches.length == 1) {
+                extended.workCommute = parseInt(matches[0]);
+            }
+            else if (matches.length == 2) {
+                extended.workCommute = parseInt(matches[0]) * 60 + parseInt(matches[1]);
+            }
         }
     }
 
@@ -405,8 +387,6 @@ async function getExtendedData(item) {
 }
 
 module.exports = {
-    propertyTypes,
-    regions,
     getHomes,
     getExtendedData
 };

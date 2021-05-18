@@ -17,6 +17,13 @@ class Config {
         this.maxPrice = 750000;
         this.minSqft = 1000;
         this.minBeds = 2;
+        this.marketId = 'britishcolumbia';
+        // vancouver = 3790, burnaby = 3791, richmond = 3789, northvan = 3279
+        this.regionIds = [ 3790, 3791 ];
+        // city = 33
+        this.regionTypes = [ 33, 33 ];
+        // house = 1, condo = 2, townhouse = 3, multifamily = 4, land = 5, other = 6, manufactured = 7, coop = 8
+        this.propertyTypeIds = [ 1, 2, 3, 4, 5, 6, 7, 8 ];
 
         this.mortgageDownPayment = 0.20;
         this.mortgageInterestRate = 0.022;
@@ -39,7 +46,10 @@ class Config {
             transitScore: 2,
             shopScore: 2
         };
-
+        
+        this.commuteTypeId = 3;
+        this.commuteLatitude = 49.2820597;
+        this.commuteLongitude =  -123.1196942;
         this.commuteScoreMinBound = 15;
         this.commuteScoreMaxBound = 60;
 

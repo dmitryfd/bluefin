@@ -67,26 +67,23 @@ async function cleanItems() {
 
 async function updateItems() {
     log(`starting update`);
-    const results = await getResults();
+    
+    const results = await redfin.getHomes({
+        'max_price': config.maxPrice,
+        'num_beds': config.minBeds,
+        'min_listing_approx_size': config.minSqft,
+        'market': config.marketId,
+        'region_id': config.regionIds,
+        'region_type': config.regionTypes,
+        'uipt': config.propertyTypeIds,
+    });
+    log(`retrieved ${results.length} results`);
+
+
     const changes = await processResults(results);
     log(`finished update`);
 
     return changes;
-}
-
-async function getResults() {
-    const maxPrice = config.maxPrice;
-    const minBeds = config.minBeds;
-    const minSqft = config.minSqft;
-
-    const res = await redfin.getHomes({
-        'max_price': maxPrice,
-        'num_beds': minBeds,
-        'min_listing_approx_size': minSqft
-    });
-
-    log(`retrieved ${res.length} results`);
-    return res;
 }
 
 async function processResults(results) {
@@ -103,7 +100,12 @@ async function processResults(results) {
     for (const result of results) {
         const item = await getItem(result.id);
         if (!item) {
-            const extended = await redfin.getExtendedData(result);
+            const options = {
+                commuteTypeId: config.commuteTypeId,
+                commuteLatitude: config.commuteLatitude,
+                commuteLongitude: config.commuteLongitude
+            };
+            const extended = await redfin.getExtendedData(result, options);
             if (extended) {
                 result.extended = extended;
             }
