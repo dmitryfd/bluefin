@@ -126,7 +126,7 @@ class Item {
 
     print() {
         const msg =
-`<u><b><a href="${this.url}">[${item.score.finalScore}] $${k(this.price)} in ${this.location}</a></b></u>
+`<u><b><a href="${this.url}">[${r(100* this.score.finalScore)}] $${k(this.price)} in ${this.location}</a></b></u>
 ${this.beds}b + ${this.baths}ba | ${this.sqft} ft² | $${r(this.pricePerSqft)}/ft² | ${this.yearBuilt}
 
 $${k(this.downPayment)} down, ~$${r(this.totalPayment)}/mo

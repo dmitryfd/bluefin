@@ -28,10 +28,16 @@ async function init() {
 async function update() {
     log(`starting update`);
 
-    const results = await getResults();
-    const changes = await processResults(results);
-    await notifyChanges(changes);
-    // displayExistingItemsWithScores(changes);
+    try {
+        const results = await getResults();
+        const changes = await processResults(results);
+        await notifyChanges(changes);
+        // displayExistingItemsWithScores(changes);
+    }
+    catch (err) {
+        console.error(err);
+        broadcast(`⚠ An error occured during update: ${err}`);
+    }
 
     log(`finished update`);
 }
@@ -89,6 +95,8 @@ async function processResults(results) {
         }
     }
 
+    verbose(`finished update: +${changes.added.length}, ~${changes.modified.length}, ${changes.existing.length}`);
+
     return changes;
 }
 
@@ -100,6 +108,12 @@ async function notifyChanges(changes) {
     for (const item of changes.added) {
         // TODO: Add notify criteria in config
         broadcast(item.print());
+    }
+}
+
+function verbose(msg) {
+    if (config.verbose) {
+        broadcast(msg);
     }
 }
 

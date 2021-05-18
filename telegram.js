@@ -84,14 +84,19 @@ bot.command('set', async (ctx) => {
 async function broadcast(msg, opts) {
     opts = opts || { parse_mode: 'html' };
 
-    const allowedUsers = config.allowedUsers || [];
-    for (const userId of allowedUsers) {
-        try {
-            await bot.telegram.sendMessage(userId, msg, opts);
+    try {
+        const allowedUsers = config.allowedUsers || [];
+        for (const userId of allowedUsers) {
+            try {
+                await bot.telegram.sendMessage(userId, msg, opts);
+            }
+            catch (err) {
+                console.error(err);
+            }
         }
-        catch (err) {
-            console.error(err);
-        }
+    }
+    catch (err) {
+        console.error(err);
     }
 }
 

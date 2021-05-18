@@ -10,9 +10,14 @@ const itemsContainer = database.container('items');
 const configContainer = database.container('config');
 
 async function initDatabase() {
-    await client.databases.createIfNotExists({ id: 'bluefin' });
-    await database.containers.createIfNotExists({ id: 'items' });
-    await database.containers.createIfNotExists({ id: 'config' });
+    try {
+        await client.databases.createIfNotExists({ id: 'bluefin' });
+        await database.containers.createIfNotExists({ id: 'items' });
+        await database.containers.createIfNotExists({ id: 'config' });
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 module.exports = {

@@ -39,22 +39,32 @@ class Config {
     }
 
     async sync() {
-        const { resources } = await configContainer.items.readAll().fetchAll();
-        if (resources) {
-            this.reset();
-            for (const resource of resources) {
-                this[resource.id] = resource.value;
+        try {
+            const { resources } = await configContainer.items.readAll().fetchAll();
+            if (resources) {
+                this.reset();
+                for (const resource of resources) {
+                    this[resource.id] = resource.value;
+                }
             }
+            log(`synced config`);
         }
-        log(`synced config`);
+        catch (err) {
+            console.error(err);
+        }
     }
     
     async set(id, value) {
-        const { resource } = await configContainer.items.upsert({ id, value });
-
-        if (resource) {
-            this[id] = value;
-            return true;
+        try {
+            const { resource } = await configContainer.items.upsert({ id, value });
+    
+            if (resource) {
+                this[id] = value;
+                return true;
+            }
+        }
+        catch (err) {
+            console.log(err);
         }
 
         return false;
