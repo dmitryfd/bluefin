@@ -12,10 +12,15 @@ async function init() {
     await config.sync();
     await bot.launch();
 
+    if (config.updateOnLaunch) {
+        await update();
+    }
+    scheduleUpdate();
+}
+
+async function update() {
     const changes = await updateItems();
     await notifyChanges(changes);
-
-    scheduleUpdate();
 }
 
 function scheduleUpdate() {
@@ -23,10 +28,7 @@ function scheduleUpdate() {
     if (updateInterval > 0) {
         updateTimeout = setTimeout(async () => {
             await config.sync();
-
-            const changes = await updateItems();
-            await notifyChanges(changes);
-
+            await update();
             scheduleUpdate();
         }, updateInterval * 1000 * 60);
     }

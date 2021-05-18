@@ -9,6 +9,7 @@ class Config {
     reset() {
         this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
+        this.updateOnLaunch = false;
         this.mute = false;
         this.verbose = false;
         this.topCount = 5;
