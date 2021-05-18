@@ -3,7 +3,7 @@ const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
 const config = require('./config');
 const { log, r, k } = require('./utils');
-const { getItem, cleanItems, getLastUpdate } = require('./items');
+const { getItem, cleanItems, updateItems, getLastUpdate } = require('./items');
 
 bot.use(async (ctx, next) => {
     const allowedUsers = config.allowedUsers || [];
@@ -145,14 +145,28 @@ bot.command('cleanup', async (ctx) => {
     ctx.replyWithMarkdown(`👎 Failed`);
 });
 
-async function broadcast(msg, opts) {
+bot.command('update', async (ctx) => {
+    try {
+        const changes = await updateItems();
+        await notifyChanges(changes);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+async function msg(txt, opts) {
+    if (config.mute) {
+        return;
+    }
+
     opts = opts || { parse_mode: 'html' };
 
     try {
         const allowedUsers = config.allowedUsers || [];
         for (const userId of allowedUsers) {
             try {
-                await bot.telegram.sendMessage(userId, msg, opts);
+                await bot.telegram.sendMessage(userId, txt, opts);
             }
             catch (err) {
                 console.error(err);
@@ -164,7 +178,29 @@ async function broadcast(msg, opts) {
     }
 }
 
+async function vmsg(txt, opts) {
+    if (config.verbose) {
+        msg(txt, opts);
+    }
+}
+
+async function notifyChanges(changes) {
+    changes = changes || getLastUpdate();
+    if (!changes) {
+        return;
+    }
+
+    vmsg(`finished update: +${changes.added.length}, ~${changes.modified.length}, ${changes.existing.length}`);
+
+    for (const item of changes.added) {
+        // TODO: Add notify criteria in config
+        msg(item.print());
+    }
+}
+
 module.exports = {
     bot,
-    broadcast
+    msg,
+    vmsg,
+    notifyChanges
 };

@@ -1,6 +1,9 @@
+const redfin = require('./redfin');
+const config = require('./config');
+const Item = require('./item');
 const { itemsContainer } = require('./database');
 const { stripMetadata } = require('./utils');
-const Item = require('./item');
+const { log, shouldUpdateItem } = require('./utils');
 
 let lastUpdate = null;
 
@@ -62,12 +65,74 @@ async function cleanItems() {
     return deleted;
 }
 
-function getLastUpdate() {
-    return lastUpdate;
+async function updateItems() {
+    log(`starting update`);
+    const results = await getResults();
+    const changes = await processResults(results);
+    log(`finished update`);
+
+    return changes;
 }
 
-function setLastUpdate(update) {
-    lastUpdate = update;
+async function getResults() {
+    const maxPrice = config.maxPrice;
+    const minBeds = config.minBeds;
+    const minSqft = config.minSqft;
+
+    const res = await redfin.getHomes({
+        'max_price': maxPrice,
+        'num_beds': minBeds,
+        'min_listing_approx_size': minSqft
+    });
+
+    log(`retrieved ${res.length} results`);
+    return res;
+}
+
+async function processResults(results) {
+    if (!results || !results.length) {
+        return;
+    }
+
+    const changes = {
+        added: [],
+        modified: [],
+        existing: []
+    };
+
+    for (const result of results) {
+        const item = await getItem(result.id);
+        if (!item) {
+            const extended = await redfin.getExtendedData(result);
+            if (extended) {
+                result.extended = extended;
+            }
+
+            changes.added.push(result);
+            await addItem(result);
+
+            log(`-- added: ${result.address}`);
+        }
+        else if (shouldUpdateItem(result, item)) {
+            result.extended = item.extended;
+            // TODO: Consider whether extended data needs to be refreshed
+
+            changes.modified.push(result);
+            await replaceItem(result);
+
+            log(`-- replaced: ${result.address}`);
+        }
+        else {
+            changes.existing.push(item);
+        }
+    }
+
+    lastUpdate = changes;
+    return changes;
+}
+
+function getLastUpdate() {
+    return lastUpdate;
 }
 
 module.exports = {
@@ -76,6 +141,6 @@ module.exports = {
     replaceItem,
     queryItems,
     cleanItems,
-    getLastUpdate,
-    setLastUpdate
+    updateItems,
+    getLastUpdate
 };
