@@ -64,7 +64,7 @@ bot.command('unset', async (ctx) => {
 bot.command('set', async (ctx) => {
     const text = ctx.message.text;
     if (text) {
-        const matches = text.match(/^\/?\w+ (\w+) (.*)$/);
+        const matches = text.match(/^\/?\w+ (\w+) (.*)$/s);
         if (matches && matches.length == 3) {
             const id = matches[1].trim();
             const valueJson = matches[2].trim();
