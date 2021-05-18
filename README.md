@@ -1,6 +1,6 @@
 ## Prerequisites
 
-* Create a free tier [CosmosDB database](https://azure.microsoft.com/en-us/try/cosmosdb/)
+* Create a [CosmosDB database](https://azure.microsoft.com/en-us/try/cosmosdb/) (free tier OK)
 * Register a [Telegram bot](https://t.me/botfather)
 * Determine your [Telegram user ID](https://t.me/getmyid_bot)
 * Prepare a server (local device, VM, Azure Web App etc)
@@ -10,8 +10,8 @@
 * Clone the repository
 * Copy `.env.example` to `.env`
 * Fill out the configuration details from the steps above
-* Fetch dependencies: `yarn install / npm install`
-* Run: `yarn start / npm run start`
+* Fetch dependencies: `yarn install` / `npm install`
+* Run: `yarn start` / `npm run start`
 
 ## Notes
 
@@ -26,8 +26,8 @@
 
 * To configure either modify the defaults in `config.js` or use these commands:
   * `/getAll` - get all settings values
-  * `/get {settingName}` - get value of setting (see `config.js`)
-  * `/set {settingName}` - set value of setting (see `config.js`)
+  * `/get {name}` - get value of setting (see `config.js`)
+  * `/set {name} {jsonValue}` - set value of setting (see `config.js`)
 
 * In addition to that, the following commands are supported:
   * `/update` - run an update cycle manually
