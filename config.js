@@ -26,16 +26,16 @@ class Config {
         this.taxYearlyRate = 0.0029;
 
         this.scoreWeights = {
-            locationScore: 10,
-            walkScore: 15,
-            commuteScore: 15,
-            monthlyPriceScore: 10,
-            ageScore: 10,
-            typeScore: 10,
-            sqftScore: 10,
-            pricePerSqftScore: 6,
-            denScore: 5,
-            trainScore: 5,
+            commuteScore: 32,
+            locationScore: 24,
+            walkScore: 24,
+            sqftScore: 12,
+            pricePerSqftScore: 12,
+            monthlyPriceScore: 8,
+            ageScore: 12,
+            typeScore: 8,
+            denScore: 4,
+            trainScore: 4,
             transitScore: 2,
             shopScore: 2
         };
