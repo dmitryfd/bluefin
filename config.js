@@ -9,17 +9,17 @@ class Config {
     reset() {
         this.allowedUsers = [process.env.TELEGRAM_DEFAULT_USERID];
         this.updateInterval = 15;
-        this.updateOnLaunch = false;
+        this.updateOnLaunch = true;
         this.mute = false;
         this.verbose = false;
-        this.topCount = 5;
+        this.topCount = 10;
 
         this.maxPrice = 750000;
         this.minSqft = 1000;
         this.minBeds = 2;
 
         this.mortgageDownPayment = 0.20;
-        this.mortgageInterestRate = 0.019;
+        this.mortgageInterestRate = 0.022;
         this.mortgageTermYears = 30;
         this.mortgagePaymentsPerYear = 12;
         this.insuranceYearlyRate = 0.0054;
