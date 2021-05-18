@@ -98,6 +98,7 @@ class Config {
     async unset(id) {
         try {
             await configContainer.item(id).delete();
+            this[id] = (new Config())[id];
             return true;
         }
         catch {
