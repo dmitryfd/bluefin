@@ -82,7 +82,7 @@ class Item {
 
         s.commuteScore = 0;
         if (this.extended && this.extended.workCommute) {
-            s.commuteScore = map(this.extended.workCommute, config.commuteScoreMinBound, config.commuteScoreMaxBound);
+            s.commuteScore = 1 - map(this.extended.workCommute, config.commuteScoreMinBound, config.commuteScoreMaxBound);
         }
 
         s.sqftScore = 0;
@@ -115,12 +115,12 @@ class Item {
             s.ageScore = map(this.yearBuilt, config.ageScoreMinBound, config.ageScoreMaxBound);
         }
 
-        s.locationScore = 0;
+        s.locationScore = 0.5;
         if (config.locationScoreGood.indexOf(this.location) >= 0) {
             s.locationScore = 1;
         }
         else if (config.locationScoreBad.indexOf(this.location) >= 0) {
-            s.locationScore = -1;
+            s.locationScore = 0;
         }
         
         s.trainScore = this.mentionsTrain ? 1 : 0;
