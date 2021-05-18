@@ -10,6 +10,7 @@ class Config {
         this.allowedUsers = ['675685158'];
         this.updateInterval = 15;
         this.mute = false;
+        this.verbose = false;
         this.topCount = 5;
 
         this.maxPrice = 750000;
@@ -37,6 +38,28 @@ class Config {
             transitScore: 2,
             shopScore: 2
         };
+
+        this.commuteScoreMinBound = 15;
+        this.commuteScoreMaxBound = 60;
+
+        this.sqftScoreMinBound = 750;
+        this.sqftScoreMaxBound = 1250;
+
+        this.pricePerSqftScoreMinBound = 400;
+        this.pricePerSqftScoreMaxBound = 700;
+
+        this.monthlyPriceScoreMinBound = 2000;
+        this.monthlyPriceScoreMaxBound = 3000;
+
+        this.ageScoreMinBound = 1970;
+        this.ageScoreMaxBound = 2011;
+
+        this.locationScoreGood = ['Kitsilano', 'Point Grey', 'Cambie', 'Metrotown', 'Brentwood Park'];
+        this.locationScoreBad = ['Highgate', 'Edmonds BE', 'Champlain Heights', 'South Marine', 'Marpole', 'Strathcona', 'Downtown VE'];
+
+        this.trainCriteria = ['train', 'station'];
+        this.denCriteria = ['den', 'solarium'];
+        this.shopCriteria = ['shop'];
     }
 
     async sync() {

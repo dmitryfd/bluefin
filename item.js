@@ -45,15 +45,36 @@ class Item {
     }
 
     get mentionsTrain() {
-        return this.normalizedRemark && (this.normalizedRemark.indexOf('train') >= 0 || this.normalizedRemark.indexOf('station') >= 0); 
+        if (this.normalizedRemark) {
+            for (const criteria of config.trainCriteria) {
+                if (this.normalizedRemark.indexOf(criteria) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     get mentionsDen() {
-        return this.normalizedRemark && (this.normalizedRemark.indexOf('den') >= 0 || this.normalizedRemark.indexOf('solarium') >= 0); 
+        if (this.normalizedRemark) {
+            for (const criteria of config.denCriteria) {
+                if (this.normalizedRemark.indexOf(criteria) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     get mentionsShops() {
-        return this.normalizedRemark && this.normalizedRemark.indexOf('shop') >= 0; 
+        if (this.normalizedRemark) {
+            for (const criteria of config.shopCriteria) {
+                if (this.normalizedRemark.indexOf(criteria) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     get score() {
@@ -61,22 +82,22 @@ class Item {
 
         s.commuteScore = 0;
         if (this.extended && this.extended.workCommute) {
-            s.commuteScore = map(this.extended.workCommute, 15, 60);
+            s.commuteScore = map(this.extended.workCommute, config.commuteScoreMinBound, config.commuteScoreMaxBound);
         }
 
         s.sqftScore = 0;
         if (this.sqft) {
-            s.sqftScore = map(this.sqft, 750, 1250);
+            s.sqftScore = map(this.sqft, config.sqftScoreMinBound, config.sqftScoreMaxBound);
         }
 
         s.pricePerSqftScore = 0;
         if (this.pricePerSqft) {
-            s.pricePerSqftScore = 1 - map(this.pricePerSqft, 400, 700);
+            s.pricePerSqftScore = 1 - map(this.pricePerSqft, config.pricePerSqftScoreMinBound, config.pricePerSqftScoreMaxBound);
         }
 
         s.monthlyPriceScore = 0;
         if (this.totalPayment) {
-            s.monthlyPriceScore = 1 - map(this.totalPayment, 2000, 3000);
+            s.monthlyPriceScore = 1 - map(this.totalPayment, config.monthlyPriceScoreMinBound, config.monthlyPriceScoreMaxBound);
         }
 
         s.walkScore = 0;
@@ -91,14 +112,14 @@ class Item {
 
         s.ageScore = 0;
         if (this.yearBuilt) {
-            s.ageScore = map(this.yearBuilt, 1970, 2011);
+            s.ageScore = map(this.yearBuilt, config.ageScoreMinBound, config.ageScoreMaxBound);
         }
 
         s.locationScore = 0;
-        if (['Kitsilano', 'Point Grey', 'Cambie', 'Metrotown', 'Brentwood Park'].indexOf(this.location) >= 0) {
+        if (config.locationScoreGood.indexOf(this.location) >= 0) {
             s.locationScore = 1;
         }
-        else if (['Highgate', 'Edmonds BE', 'Champlain Heights', 'South Marine', 'Marpole', 'Strathcona', 'Downtown VE'].indexOf(this.location) >= 0) {
+        else if (config.locationScoreBad.indexOf(this.location) >= 0) {
             s.locationScore = -1;
         }
         

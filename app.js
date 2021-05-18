@@ -5,7 +5,7 @@ const config = require('./config');
 const { getItem, addItem, replaceItem, setLastUpdate } = require('./items');
 const { initDatabase } = require('./database');
 const { bot, broadcast } = require('./telegram');
-const { log, shouldUpdateItem, r, k } = require('./utils');
+const { log, shouldUpdateItem } = require('./utils');
 
 async function init() {
     await initDatabase();
