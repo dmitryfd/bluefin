@@ -39,6 +39,10 @@ function r(n) {
     return Math.round(n);
 }
 
+function j(obj) {
+    return JSON.stringify(obj, null, 2);
+}
+
 function map(x, min, max) {
     const adjustedMax = max - min;
     
@@ -55,5 +59,6 @@ module.exports = {
     shouldUpdateItem,
     k,
     r,
+    j,
     map
 };

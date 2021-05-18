@@ -2,7 +2,7 @@ const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
 const config = require('./config');
-const { log, r, k } = require('./utils');
+const { log, r, k, j } = require('./utils');
 const { getItem, cleanItems, updateItems, getLastUpdate } = require('./items');
 
 bot.use(async (ctx, next) => {
@@ -40,8 +40,12 @@ bot.command('get', ctx => {
         ctx.replyWithMarkdown(`👎 Such setting does not exist`);
     }
     else {
-        ctx.replyWithHTML(JSON.stringify(value));
+        ctx.replyWithHTML(j(value));
     }
+});
+
+bot.command('getAll', ctx => {
+    ctx.replyWithHTML(j(config));
 });
 
 bot.command('unset', async (ctx) => {
