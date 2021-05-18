@@ -7,7 +7,7 @@ class Config {
     }
 
     reset() {
-        this.allowedUsers = ['675685158'];
+        this.allowedUsers = [process.env.TELEGRAM_DEFAULT_USERID];
         this.updateInterval = 15;
         this.updateOnLaunch = false;
         this.mute = false;
