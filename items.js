@@ -137,6 +137,37 @@ function getLastUpdate() {
     return lastUpdate;
 }
 
+function dumpAsCsv() {
+    const allItems = [...lastUpdate.added, ...lastUpdate.modified, ...lastUpdate.existing];
+
+    console.log('id,price,sqft,pricePerSqft,beds,baths,yearBuilt,location,streetLine,city,walkScore,transitScore,workCommute,totalPayment,hoaPayment,mentionsTrain,mentionsDen,mentionsShops,isTownhouse,score');
+
+    for (const x of allItems) {
+        console.log([
+            x.id,
+            x.price,
+            x.sqft,
+            x.pricePerSqft,
+            x.beds,
+            x.baths,
+            x.yearBuilt,
+            x.location,
+            x.streetLine,
+            x.city,
+            x.extended.walkScore.walk || -1,
+            x.extended.walkScore.transit || -1,
+            x.extended.workCommute,
+            x.totalPayment,
+            x.hoaPayment || -1,
+            x.mentionsTrain ? 1 : 0,
+            x.mentionsDen ? 1 : 0,
+            x.mentionsShops ? 1 : 0,
+            x.type == "TOWNHOUSE" ? 1 : 0,
+            x.score.finalScore
+        ].join(','));
+    }
+}
+
 module.exports = {
     getItem,
     addItem,
@@ -144,5 +175,6 @@ module.exports = {
     queryItems,
     cleanItems,
     updateItems,
-    getLastUpdate
+    getLastUpdate,
+    dumpAsCsv
 };

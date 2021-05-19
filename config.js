@@ -33,17 +33,17 @@ class Config {
         this.taxYearlyRate = 0.0029;
 
         this.scoreWeights = {
-            commuteScore: 32,
-            locationScore: 24,
-            walkScore: 24,
+            commuteScore: 20,
+            locationScore: 10,
+            walkScore: 16,
             sqftScore: 12,
-            pricePerSqftScore: 12,
-            monthlyPriceScore: 8,
-            ageScore: 12,
-            typeScore: 8,
+            pricePerSqftScore: 10,
+            monthlyPriceScore: 10,
+            ageScore: 6,
+            typeScore: 4,
             denScore: 4,
-            trainScore: 4,
-            transitScore: 2,
+            trainScore: 3,
+            transitScore: 3,
             shopScore: 2
         };
         
@@ -51,26 +51,26 @@ class Config {
         this.commuteLatitude = 49.2820597;
         this.commuteLongitude =  -123.1196942;
         this.commuteScoreMinBound = 15;
-        this.commuteScoreMaxBound = 60;
+        this.commuteScoreMaxBound = 45;
 
         this.sqftScoreMinBound = 750;
-        this.sqftScoreMaxBound = 1250;
+        this.sqftScoreMaxBound = 1500;
 
         this.pricePerSqftScoreMinBound = 400;
-        this.pricePerSqftScoreMaxBound = 700;
+        this.pricePerSqftScoreMaxBound = 800;
 
-        this.monthlyPriceScoreMinBound = 2000;
-        this.monthlyPriceScoreMaxBound = 3000;
+        this.monthlyPriceScoreMinBound = 2400;
+        this.monthlyPriceScoreMaxBound = 3600;
 
         this.ageScoreMinBound = 1970;
-        this.ageScoreMaxBound = 2011;
+        this.ageScoreMaxBound = 2020;
 
         this.locationScoreGood = ['Kitsilano', 'Point Grey', 'Cambie', 'Metrotown', 'Brentwood Park'];
         this.locationScoreBad = ['Highgate', 'Edmonds BE', 'Champlain Heights', 'South Marine', 'Marpole', 'Strathcona', 'Downtown VE'];
 
         this.trainCriteria = ['train', 'station'];
         this.denCriteria = ['den', 'solarium'];
-        this.shopCriteria = ['shop'];
+        this.shopCriteria = ['shop', 'grocery'];
     }
 
     async sync() {
