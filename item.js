@@ -160,10 +160,20 @@ $${k(this.downPayment)} down, ~$${r(this.totalPayment)}/mo
 
     printScore() {
         const score = this.score;
+
+        let totalWeights = 0;
+        for (const weight in config.scoreWeights) {
+            totalWeights += config.scoreWeights[weight];
+        }
         
         const scoreMsgs = [];
         for (const key in score) {
-            scoreMsgs.push(`${key} = ${r(100 * score[key])}`)
+            let scoreMsg = `${key} = ${r(100 * score[key])}`;
+            if (key != 'finalScore') {
+                scoreMsg += ` (${r(100 * score[key] * config.scoreWeights[key] / totalWeights)})`;
+            }
+
+            scoreMsgs.push(scoreMsg);
         }
 
         const msg =
