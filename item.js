@@ -145,7 +145,7 @@ class Item {
         };
     }
 
-    print() {
+    printLegacy() {
         const msg =
 `<u><b><a href="${this.url}">[${r(100* this.score.finalScore)}] $${k(this.price)} in ${this.location}</a></b></u>
 ${this.beds}b + ${this.baths}ba | ${this.sqft} ft² | $${r(this.pricePerSqft)}/ft² | ${this.yearBuilt}
@@ -153,6 +153,36 @@ ${this.beds}b + ${this.baths}ba | ${this.sqft} ft² | $${r(this.pricePerSqft)}/f
 $${k(this.downPayment)} down, ~$${r(this.totalPayment)}/mo
 (M $${k(this.mortgagePayment)}, T $${r(this.taxPayment)}, I $${r(this.insurancePayment)}, H $${r(this.hoaPayment)})
 
+<i><a href="${this.mapUrl}">${this.address}</a></i>`;
+        
+        return msg;
+    }
+
+    print() {
+        const features = [];
+        if (this.mentionsDen) {
+            features.push('Den');
+        }
+        if (this.type == "TOWNHOUSE") {
+            features.push('Townhouse');
+        }
+        if (this.mentionsShops) {
+            features.push('Shops');
+        }
+        let featureStr = '';
+        if (features.length > 0) {
+            featureStr = features.join(', ') + '\n';
+        }
+
+        const lastSoldYear = this.lastSoldDate && new Date(this.lastSoldDate).getFullYear();
+
+        const msg =
+`<u><b><a href="${this.url}">[${r(100* this.score.finalScore)}] $${k(this.price)} in ${this.location}</a></b></u>
+
+${this.beds}b + ${this.baths}ba | ${this.sqft} ft² | ${this.yearBuilt} | LS ${lastSoldYear || '?'}
+WS ${this.extended.walkScore.walk || '?'} | TS ${this.extended.walkScore.transit || '?'} | ${this.extended.workCommute} min to work
+$${k(this.downPayment)} down | ~$${k(this.totalPayment)}/mo | $${r(this.pricePerSqft)}/ft²
+${featureStr}
 <i><a href="${this.mapUrl}">${this.address}</a></i>`;
         
         return msg;
