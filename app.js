@@ -27,9 +27,13 @@ function scheduleUpdate() {
     const updateInterval = config.updateInterval;
     if (updateInterval > 0) {
         updateTimeout = setTimeout(async () => {
-            await config.sync();
-            await update();
-            scheduleUpdate();
+            try {
+                await config.sync();
+                await update();
+            }
+            finally {
+                scheduleUpdate();
+            }
         }, updateInterval * 1000 * 60);
     }
 }
