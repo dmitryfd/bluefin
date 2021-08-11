@@ -71,6 +71,8 @@ class Config {
         this.trainCriteria = ['train', 'station'];
         this.denCriteria = ['den', 'solarium'];
         this.shopCriteria = ['shop', 'grocery'];
+
+        this.ignoreList = [];
     }
 
     async sync() {

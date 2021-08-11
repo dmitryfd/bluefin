@@ -94,10 +94,19 @@ async function processResults(results) {
     const changes = {
         added: [],
         modified: [],
-        existing: []
+        existing: [],
+        ignored: []
     };
 
     for (const result of results) {
+        if (config.ignoreList.indexOf(result.id) >= 0
+            || config.ignoreList.indexOf(result.address) >= 0
+            || config.ignoreList.indexOf(result.postalCode) >= 0) {
+            changes.ignored.push(result);
+            log(`-- ignored: ${result.address}`);
+            continue;
+        }
+
         const item = await getItem(result.id);
         if (!item) {
             const options = {
