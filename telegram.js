@@ -159,6 +159,23 @@ bot.command('update', async (ctx) => {
     }
 });
 
+bot.command('stats', async (ctx) => {
+    try {
+        const changes = getLastUpdate();
+        if (changes) {
+            const totalItems = changes.added.length + changes.modified.length + changes.existing.length;
+
+            ctx.replyWithMarkdown(`${totalItems} items in the database (last update: ${changes.added.length} added, ${changes.modified.length} modified), ${changes.ignored.length} ignored`);
+        }
+        else {
+            ctx.replyWithMarkdown(`😥 Couldn't process that`);
+        }
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
 async function msg(txt, opts) {
     if (config.mute) {
         return;
