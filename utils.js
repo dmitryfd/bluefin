@@ -16,6 +16,15 @@ function log(msg) {
     console.log(msg);
 }
 
+function shouldIgnore(ignoreList, testString) {
+    for (let i = 0; i < ignoreList.length; ++i) {
+        if (testString.indexOf(ignoreList[i]) >= 0) {
+            return true;
+        } 
+    }
+    return false;
+}
+
 function shouldUpdateItem(newItem, existingItem) {
     if (!newItem) {
         return false;
@@ -56,6 +65,7 @@ function map(x, min, max) {
 module.exports = {
     stripMetadata,
     log,
+    shouldIgnore,
     shouldUpdateItem,
     k,
     r,

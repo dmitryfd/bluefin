@@ -165,7 +165,7 @@ bot.command('stats', async (ctx) => {
         if (changes) {
             const totalItems = changes.added.length + changes.modified.length + changes.existing.length;
 
-            ctx.replyWithMarkdown(`${totalItems} items in the database (last update: ${changes.added.length} added, ${changes.modified.length} modified), ${changes.ignored.length} ignored`);
+            ctx.replyWithMarkdown(`${totalItems} results (+${changes.added.length}, ~${changes.modified.length}), ${changes.ignored.length} ignored`);
         }
         else {
             ctx.replyWithMarkdown(`😥 Couldn't process that`);

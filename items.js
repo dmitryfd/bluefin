@@ -3,7 +3,7 @@ const config = require('./config');
 const Item = require('./item');
 const { itemsContainer } = require('./database');
 const { stripMetadata } = require('./utils');
-const { log, shouldUpdateItem } = require('./utils');
+const { log, shouldIgnore, shouldUpdateItem } = require('./utils');
 
 let lastUpdate = null;
 
@@ -99,9 +99,7 @@ async function processResults(results) {
     };
 
     for (const result of results) {
-        if (config.ignoreList.indexOf(result.id) >= 0
-            || config.ignoreList.indexOf(result.address) >= 0
-            || config.ignoreList.indexOf(result.postalCode) >= 0) {
+        if (shouldIgnore(config.ignoreList, result.id) || shouldIgnore(config.ignoreList, result.address) || shouldIgnore(config.ignoreList, result.postalCode)) {
             changes.ignored.push(result);
             log(`-- ignored: ${result.address}`);
             continue;
