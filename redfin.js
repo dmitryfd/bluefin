@@ -346,7 +346,8 @@ async function getExtendedData(item, options = null) {
                 extended.workCommute = null;
             }
             else if (matches.length == 1) {
-                extended.workCommute = parseInt(matches[0]);
+                const multiplier = c.indexOf("hour") >= 0 ? 60 : 1;
+                extended.workCommute = parseInt(matches[0]) * multiplier;
             }
             else if (matches.length == 2) {
                 extended.workCommute = parseInt(matches[0]) * 60 + parseInt(matches[1]);
