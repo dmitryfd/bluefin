@@ -18,7 +18,7 @@ function log(msg) {
 
 function shouldIgnore(ignoreList, testString) {
     for (let i = 0; i < ignoreList.length; ++i) {
-        if (testString.indexOf(ignoreList[i]) >= 0) {
+        if (testString && testString.indexOf(ignoreList[i]) >= 0) {
             return true;
         } 
     }
