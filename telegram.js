@@ -4,6 +4,7 @@ const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 const config = require('./config');
 const { log, r, k, j } = require('./utils');
 const { getItem, cleanItems, updateItems, getLastUpdate } = require('./items');
+const { getMortgages } = require('./ratehub');
 
 bot.use(async (ctx, next) => {
     const allowedUsers = config.allowedUsers || [];
@@ -170,6 +171,28 @@ bot.command('stats', async (ctx) => {
         else {
             ctx.replyWithMarkdown(`😥 Couldn't process that`);
         }
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+bot.command('rates', async (ctx) => {
+    try {
+        const fixedMortgages = await getMortgages({ type: 'fixed' });
+        const variableMortgages = await getMortgages({ type: 'variable' });
+
+        let msg = 'Fixed rates:\n';
+        for (let i = 0; i < Math.min(fixedMortgages.length, 5); ++i) {
+            msg += `* ${fixedMortgages[i].provider}: ${fixedMortgages[i].value}%\n`;
+        }
+
+        msg += '\nVariable rates:\n';
+        for (let i = 0; i < Math.min(variableMortgages.length, 5); ++i) {
+            msg += `* ${variableMortgages[i].provider}: P${variableMortgages[i].valueP.toPrecision(2)}% (${variableMortgages[i].value}%)\n`;
+        }
+
+        ctx.replyWithMarkdown(msg);
     }
     catch (err) {
         console.error(err);
