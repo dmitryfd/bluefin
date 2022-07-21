@@ -39,3 +39,10 @@ function scheduleUpdate() {
 }
 
 init();
+
+// Ensure that Azure Web App is pingable so it is started correctly
+const http = require('http');
+http.createServer((req, res) => {
+    res.write('OK');
+    res.end();
+}).listen(process.env.PORT || 8080);

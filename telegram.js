@@ -184,12 +184,12 @@ bot.command('rates', async (ctx) => {
 
         let msg = 'Fixed rates:\n';
         for (let i = 0; i < Math.min(fixedMortgages.length, 5); ++i) {
-            msg += `* ${fixedMortgages[i].provider}: ${fixedMortgages[i].value}%\n`;
+            msg += `- ${fixedMortgages[i].provider}: ${fixedMortgages[i].value}%\n`;
         }
 
         msg += '\nVariable rates:\n';
         for (let i = 0; i < Math.min(variableMortgages.length, 5); ++i) {
-            msg += `* ${variableMortgages[i].provider}: P${variableMortgages[i].valueP.toPrecision(2)}% (${variableMortgages[i].value}%)\n`;
+            msg += `- ${variableMortgages[i].provider}: P${variableMortgages[i].valueP.toPrecision(2)}% (${variableMortgages[i].value}%)\n`;
         }
 
         ctx.replyWithMarkdown(msg);
