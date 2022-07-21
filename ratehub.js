@@ -29,7 +29,8 @@ async function getMortgages(params = null) {
             value: x.value, 
             valueP: x.value - res.data.data.primeRate,  
             hold: x.rateHold, 
-            provider: x.provider
+            provider: res.data.data.providers[x.provider].name,
+            url: 'https://ratehub.ca' + x.href
           }));
 
           items.sort((a, b) => a.value > b.value ? 1 : -1);
